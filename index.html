@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Calm King</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>%F0%9F%91%91</text></svg>">
+</head>
+<body>
+
+<div id="app" class="app" hidden>
+
+  <header class="hud">
+    <div class="hud-left">
+      <button class="icon-btn" id="btn-levels" title="Level select (Esc)" aria-label="Level select">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-help" title="How to play (H)" aria-label="How to play">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2 1-1.2 1.9v.3"/><circle cx="12" cy="17.5" r="1"/></svg>
+      </button>
+      <div class="hud-title">
+        <span class="hud-num" id="hud-num">I</span>
+        <span class="hud-name" id="hud-name">The Quiet Gate</span>
+      </div>
+    </div>
+
+    <div class="hud-meter">
+      <div class="meter" id="meter" role="img" aria-label="Board balance">
+        <div class="meter-band meter-band-warn left"></div>
+        <div class="meter-band meter-band-crit left"></div>
+        <div class="meter-band meter-band-warn right"></div>
+        <div class="meter-band meter-band-crit right"></div>
+        <div class="meter-centre"></div>
+        <div class="meter-needle" id="meter-needle"></div>
+      </div>
+      <div class="meter-label" id="meter-label">Steady</div>
+    </div>
+
+    <div class="hud-right">
+      <div class="stat"><span class="stat-k">Moves</span><span class="stat-v" id="stat-moves">0</span></div>
+      <div class="stat"><span class="stat-k">Time</span><span class="stat-v" id="stat-time">0:00</span></div>
+      <button class="icon-btn" id="btn-undo" title="Undo (Z)" aria-label="Undo last move">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 0 12h-3"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-restart" title="Restart (R)" aria-label="Restart level">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6"/><path d="M20 5v6h-6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <div class="scene" id="scene">
+      <div class="rig" id="rig">
+        <div class="board" id="board"></div>
+      </div>
+      <div class="fulcrum" aria-hidden="true">
+        <div class="fulcrum-wedge"></div>
+        <div class="fulcrum-base"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <footer class="teach" id="teach"></footer>
+
+  <!-- ------------------------------------------------------------ overlays -->
+
+  <div class="overlay" id="ov-win" hidden>
+    <div class="card">
+      <div class="crowns" id="win-crowns"></div>
+      <h2 class="card-title" id="win-title">The King is through.</h2>
+      <dl class="score">
+        <div><dt>Moves</dt><dd id="win-moves">0</dd></div>
+        <div><dt>Time</dt><dd id="win-time">0:00</dd></div>
+        <div><dt>Best</dt><dd id="win-best">—</dd></div>
+      </dl>
+      <p class="card-note" id="win-note"></p>
+      <div class="card-actions">
+        <button class="btn btn-ghost" id="win-replay">Replay</button>
+        <button class="btn btn-ghost" id="win-select">Levels</button>
+        <button class="btn btn-primary" id="win-next">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-fail" hidden>
+    <div class="card card-fail">
+      <div class="fail-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 40"><path class="fm-crown" d="M12 30 L8 12 l10 7 L26 6 l8 13 l10 -7 l-4 18 z"/></svg>
+      </div>
+      <h2 class="card-title" id="fail-title">The kingdom leaned a little too far.</h2>
+      <p class="card-note" id="fail-note"></p>
+      <div class="card-actions">
+        <button class="btn btn-ghost" id="fail-undo">Undo that</button>
+        <button class="btn btn-primary" id="fail-retry">Try again</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-help" hidden>
+    <div class="card card-help">
+      <h2 class="card-title">How to play</h2>
+      <ul class="keys">
+        <li><span class="k-do">Pick a piece</span><span class="k-in">Click or tap it. <kbd>Tab</kbd> cycles through them all.</span></li>
+        <li><span class="k-do">Move it</span><span class="k-in">Click a lit tile, drag toward it, or press <span class="k-arrows"><kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd></span></span></li>
+        <li><span class="k-do">Push</span><span class="k-in">Walk a piece into another and it shoves it along.</span></li>
+        <li><span class="k-do">Undo</span><span class="k-in"><kbd>Z</kbd> — takes back a whole turn, sliding and all.</span></li>
+        <li><span class="k-do">Restart</span><span class="k-in"><kbd>R</kbd></span></li>
+        <li><span class="k-do">Levels</span><span class="k-in"><kbd>Esc</kbd></span></li>
+      </ul>
+      <p class="card-note">Any piece can be moved, not only the King. Every one of
+        them is a counterweight, and the far ones pull hardest.</p>
+      <div class="card-actions">
+        <button class="btn btn-primary" id="help-close">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay overlay-full" id="ov-levels" hidden>
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>The Kingdom</h2>
+        <button class="icon-btn" id="levels-close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="level-grid" id="level-grid"></div>
+      <div class="sheet-foot">
+        <button class="btn btn-ghost" id="btn-options">Options</button>
+        <span class="total-crowns" id="total-crowns"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay overlay-full" id="ov-options" hidden>
+    <div class="sheet sheet-narrow">
+      <div class="sheet-head">
+        <h2>Options</h2>
+        <button class="icon-btn" id="options-close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="options" id="options"></div>
+      <div class="sheet-foot">
+        <button class="btn btn-ghost btn-danger" id="btn-wipe">Erase all progress</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay overlay-full" id="ov-title" hidden>
+    <div class="titlecard">
+      <svg class="title-crown" viewBox="0 0 120 74" aria-hidden="true">
+        <path d="M14 62 L6 18 l24 16 L60 4 l30 30 l24 -16 l-8 44 z"/>
+        <circle cx="60" cy="16" r="5"/><circle cx="12" cy="22" r="4"/><circle cx="108" cy="22" r="4"/>
+      </svg>
+      <h1>Calm King</h1>
+      <p class="tagline">Every piece is a counterweight.</p>
+      <div class="card-actions">
+        <button class="btn btn-primary" id="title-play">Begin</button>
+        <button class="btn btn-ghost" id="title-help">How to play</button>
+        <button class="btn btn-ghost" id="title-levels">Levels</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<noscript><p style="color:#e8dcc6;font:16px/1.6 Georgia,serif;padding:2rem">Calm King needs JavaScript.</p></noscript>
+
+<script src="js/engine.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

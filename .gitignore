@@ -1,0 +1,10 @@
+.DS_Store
+*.log
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# in case tooling arrives later
+node_modules/

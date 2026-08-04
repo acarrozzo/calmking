@@ -71,6 +71,15 @@
       '</svg>'
   };
 
+  var ARROW_ART =
+    '<svg class="ledge" viewBox="0 0 40 40" aria-hidden="true">' +
+    '<path d="M13 10 L25 20 L13 30" stroke-width="4"/>' +
+    '<path d="M24 10 L36 20 L24 30" stroke-width="4" opacity=".45"/></svg>';
+
+  var PORTCULLIS_ART =
+    '<div class="gate-frame"></div><div class="gate-bars">' +
+    '<i></i><i></i><i></i><i></i></div>';
+
   var GATE_ART =
     '<svg class="gate" viewBox="0 0 40 40" aria-hidden="true">' +
     '<path d="M8 34 V16 a12 12 0 0 1 24 0 v18" stroke-width="2.6"/>' +
@@ -110,7 +119,18 @@
 
         var top = document.createElement('div');
         top.className = 'cell-top';
-        if (isExit) top.innerHTML = GATE_ART;
+        if (isExit) {
+          top.innerHTML = GATE_ART;
+        } else if (cell.t === 'oneway') {
+          el.classList.add(cell.dc === 1 ? 'way-e' : cell.dc === -1 ? 'way-w'
+                                        : cell.dr === 1 ? 'way-s' : 'way-n');
+          top.innerHTML = ARROW_ART;
+        } else if (cell.t === 'plate') {
+          top.innerHTML = '<span class="plate-need">' + cell.need + '</span>';
+          el.setAttribute('aria-label', 'Pressure plate, needs weight ' + cell.need);
+        } else if (cell.t === 'door') {
+          top.innerHTML = PORTCULLIS_ART;
+        }
         el.appendChild(top);
 
         if (cell.t === 'wall') {
@@ -132,6 +152,30 @@
 
   Renderer.prototype.cellAt = function (c, r) {
     return this.cells[r * GRID + c];
+  };
+
+  /* Floors that have given way, and whether the portcullises are up. */
+  Renderer.prototype.applyTiles = function (broken, gates) {
+    var self = this, level = this.level;
+    for (var i = 0; i < level.fragiles.length; i++) {
+      var f = level.fragiles[i];
+      self.cellAt(f.col, f.row).classList.toggle('broken', !!(broken && broken[f.col + ',' + f.row]));
+    }
+    for (var j = 0; j < level.doors.length; j++) {
+      var d = level.doors[j];
+      self.cellAt(d.col, d.row).classList.toggle('open', !!gates);
+    }
+  };
+
+  Renderer.prototype.applyPlates = function (pieces) {
+    var level = this.level;
+    for (var i = 0; i < level.plates.length; i++) {
+      var pl = level.plates[i];
+      var load = E.plateLoad(level, pieces, pl);
+      var cell = this.cellAt(pl.col, pl.row);
+      cell.classList.toggle('pressed', load >= pl.need);
+      cell.classList.toggle('partial', load > 0 && load < pl.need);
+    }
   };
 
   /* --------------------------------------------------------------- pieces */
@@ -181,6 +225,10 @@
     opts = opts || {};
     var self = this;
     this.syncPieces(pieces);
+    if (opts.broken !== undefined || opts.gates !== undefined) {
+      this.applyTiles(opts.broken, opts.gates);
+    }
+    this.applyPlates(pieces);
 
     var groups = {};
     pieces.forEach(function (p) {
@@ -270,13 +318,16 @@
     Object.keys(this.pieceEls).forEach(function (pid) {
       self.pieceEls[pid].classList.toggle('selected', pid === id);
     });
-    this.cells.forEach(function (c) { c.classList.remove('target', 'shove', 'risky'); });
+    this.cells.forEach(function (c) {
+      c.classList.remove('target', 'shove', 'risky', 'crumbles');
+    });
     if (!moves) return;
 
     moves.forEach(function (m) {
       var cell = self.cellAt(m.col, m.row);
       cell.classList.add('target');
       if (m.pushes && m.pushes.length) cell.classList.add('shove');
+      if (m.breaks) cell.classList.add('crumbles');
       if (Math.abs(m.ratio) >= 0.88) cell.classList.add('risky');
       cell.dataset.dc = m.dc;
       cell.dataset.dr = m.dr;

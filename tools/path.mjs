@@ -31,12 +31,19 @@ function show(label) {
     let line = '';
     for (let c = 0; c < 7; c++) {
       const here = E.piecesAt(state.pieces, c, r);
-      if (here.length > 1) line += String(here.length);
+      const cell = E.cellAt(level, c, r);
+      if (state.broken[c + ',' + r]) line += ' ';
+      else if (here.length > 1) line += String(here.length);
       else if (here.length === 1) line += here[0].id.toUpperCase();
-      else if (E.isWall(level, c, r)) line += '#';
+      else if (cell.t === 'wall') line += '#';
       else if (c === level.exit.col && r === level.exit.row) line += 'E';
-      else line += E.cellAt(level, c, r).t === 'cradle' ? 'o'
-                 : E.cellAt(level, c, r).t === 'slick' ? '~' : '.';
+      else if (cell.t === 'cradle') line += 'o';
+      else if (cell.t === 'slick') line += '~';
+      else if (cell.t === 'fragile') line += 'x';
+      else if (cell.t === 'plate') line += String(cell.need);
+      else if (cell.t === 'door') line += E.doorsOpen(level, state.pieces) ? ':' : 'd';
+      else if (cell.t === 'oneway') line += { '1,0': '>', '-1,0': '<', '0,-1': '^', '0,1': 'v' }[cell.dc + ',' + cell.dr];
+      else line += '.';
     }
     grid.push(line);
   }

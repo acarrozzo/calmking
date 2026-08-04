@@ -6,7 +6,9 @@
   var LEVELS = root.CK.LEVELS.map(E.buildLevel);
   var STORE_KEY = 'calmking.v1';
   var ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
-               'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+               'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
+               'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'];
+  function roman(n) { return ROMAN[n] || String(n); }
 
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
@@ -78,7 +80,10 @@
     other: function () { return !!g.did.other; },
     push:  function () { return !!g.did.push; },
     stack: function () { return !!g.did.stack; },
-    slide: function () { return !!g.did.slide; }
+    slide: function () { return !!g.did.slide; },
+    oneway: function () { return !!g.did.oneway; },
+    'break': function () { return !!g.did['break']; },
+    gate: function () { return !!g.did.gate; }
   };
 
   function refreshTeach() {
@@ -88,6 +93,10 @@
     el.teach.classList.toggle('show', !done());
   }
   var tickTimer = 0;
+
+  function tileState() {
+    return { broken: g.gs.broken, gates: E.doorsOpen(g.level, g.gs.pieces) };
+  }
 
   function fmtTime(ms) {
     var s = Math.floor(ms / 1000);
@@ -152,12 +161,12 @@
     hideAll();
     renderer.resetTip();
     renderer.mount(g.level);
-    renderer.draw(g.gs.pieces);
+    renderer.draw(g.gs.pieces, tileState());
     var ratio = E.ratioOf(g.level, g.gs.pieces);
     renderer.setTilt(ratio, true);
     updateMeter(ratio, E.zoneOf(ratio).key);
 
-    el.hudNum.textContent = 'Level ' + (ROMAN[g.level.id] || g.level.id);
+    el.hudNum.textContent = 'Level ' + roman(g.level.id);
     el.hudName.textContent = g.level.title;
     el.statMoves.textContent = '0';
     el.statTime.textContent = fmtTime(g.elapsed);
@@ -185,7 +194,7 @@
       return;
     }
     g.selected = id;
-    renderer.setSelection(id, E.legalMoves(g.level, g.gs.pieces, id));
+    renderer.setSelection(id, E.legalMoves(g.level, g.gs, id));
     if (!quiet) A.play('select');
   }
 
@@ -197,13 +206,17 @@
   function snapshot() {
     return {
       pieces: E.clonePieces(g.gs.pieces),
+      broken: E.cloneBroken(g.gs.broken),
       moves: g.gs.moves,
       status: g.gs.status,
       selected: g.selected
     };
   }
 
+  /* Pressing on during a slide used to drop the keystroke on the floor. Snap
+     the animation to its end instead, so a quick player never loses a move. */
   function tryMove(id, dc, dr) {
+    if (g.busy) skipAnimation();
     if (g.busy || g.gs.status !== 'play') return;
     var res = E.step(g.level, g.gs, id, dc, dr);
     if (!res.ok) {
@@ -230,6 +243,10 @@
       return was && (was.col !== p.col || was.row !== p.row);
     })) g.did.push = true;
     if (res.frames.length > 1) g.did.slide = true;
+    var landed = E.byId(res.frames[0].pieces, id);
+    if (E.cellAt(g.level, landed.col, landed.row).t === 'oneway') g.did.oneway = true;
+    for (var bk in res.state.broken) if (res.state.broken[bk]) g.did.break = true;
+    if (g.level.plates.length && E.doorsOpen(g.level, res.state.pieces)) g.did.gate = true;
     res.state.pieces.forEach(function (p) {
       if (E.piecesAt(res.state.pieces, p.col, p.row).length > 1) g.did.stack = true;
     });
@@ -251,14 +268,32 @@
     });
   }
 
+  var skipAnimation = function () {};
+
   function playFrames(frames, firstSfx, fromRatio, done) {
     var i = 0;
     var speed = 1 / store.opts.speed;
     var prevRatio = fromRatio;
+    var timer = 0, over = false;
+
+    function land(f) {
+      renderer.draw(f.pieces, { broken: f.broken, gates: f.gates });
+      renderer.setTilt(f.ratio);
+      updateMeter(f.ratio, f.zone);
+      g.lastZone = f.zone;
+    }
+
+    skipAnimation = function () {
+      if (over) return;
+      over = true;
+      clearTimeout(timer);
+      land(frames[frames.length - 1]);
+      done();
+    };
 
     function step() {
       var f = frames[i];
-      renderer.draw(f.pieces, { sliding: f.kind === 'slide' });
+      renderer.draw(f.pieces, { sliding: f.kind === 'slide', broken: f.broken, gates: f.gates });
       renderer.setTilt(f.ratio);
       updateMeter(f.ratio, f.zone);
 
@@ -281,9 +316,13 @@
 
       i++;
       if (i < frames.length) {
-        setTimeout(step, (f.kind === 'slide' ? 190 : 210) * speed);
+        timer = setTimeout(step, (f.kind === 'slide' ? 190 : 210) * speed);
       } else {
-        setTimeout(done, 260 * speed);
+        timer = setTimeout(function () {
+          if (over) return;
+          over = true;
+          done();
+        }, 260 * speed);
       }
     }
     step();
@@ -291,7 +330,7 @@
 
   function finishTurn() {
     if (g.gs.status === 'won') return onWin();
-    if (g.gs.status === 'tipped') return onFail();
+    if (g.gs.status === 'tipped' || g.gs.status === 'stranded') return onFail();
     /* stay on the piece the player is working with, so a counterweight can be
        walked several tiles without reselecting it every turn */
     if (g.lastMoved && E.byId(g.gs.pieces, g.lastMoved)) select(g.lastMoved, true);
@@ -367,26 +406,35 @@
   function onFail() {
     stopClock();
     deselect();
+    var stranded = g.gs.status === 'stranded';
     var ratio = E.ratioOf(g.level, g.gs.pieces);
-    renderer.tipOver(ratio);
-    A.play('tip');
-    if (store.opts.shake) renderer.jolt();
 
-    var side = ratio > 0 ? 'east' : 'west';
-    el.failTitle.textContent = FAIL_LINES[g.gs.moves % FAIL_LINES.length];
-    el.failNote.textContent = 'Too much weight out to the ' + side + '. Undo one move and try another order.';
-    setTimeout(function () { show(el.ovFail); }, 620 / store.opts.speed);
+    if (stranded) {
+      el.failTitle.textContent = 'The road to the gate is gone.';
+      el.failNote.textContent = 'Nothing is left standing between the King and the gate. ' +
+                                'Undo, and spend that crossing on someone else.';
+      A.play('deny');
+    } else {
+      renderer.tipOver(ratio);
+      A.play('tip');
+      if (store.opts.shake) renderer.jolt();
+      el.failTitle.textContent = FAIL_LINES[g.gs.moves % FAIL_LINES.length];
+      el.failNote.textContent = 'Too much weight out to the ' + (ratio > 0 ? 'east' : 'west') +
+                                '. Undo one move and try another order.';
+    }
+    setTimeout(function () { show(el.ovFail); }, (stranded ? 260 : 620) / store.opts.speed);
   }
 
   /* ---------------------------------------------------------------- undo */
 
   function undo() {
+    if (g.busy) skipAnimation();
     if (g.busy || !g.history.length) return;
     var snap = g.history.pop();
-    g.gs = { pieces: snap.pieces, moves: snap.moves, status: snap.status };
+    g.gs = { pieces: snap.pieces, broken: snap.broken, moves: snap.moves, status: snap.status };
     hideAll();
     renderer.resetTip();
-    renderer.draw(g.gs.pieces);
+    renderer.draw(g.gs.pieces, tileState());
     var ratio = E.ratioOf(g.level, g.gs.pieces);
     renderer.setTilt(ratio);
     updateMeter(ratio, E.zoneOf(ratio).key);
@@ -406,6 +454,7 @@
   var drag = null;
   function onPointerDown(ev) {
     A.unlock();
+    if (g.busy) skipAnimation();
     if (g.busy || g.gs.status !== 'play') return;
 
     var pieceEl = ev.target.closest('.piece');
@@ -503,6 +552,8 @@
     if (!el.ovTitle.hidden || !el.ovLevels.hidden || !el.ovOptions.hidden) return;
     if (ev.key === 'h' || ev.key === 'H' || ev.key === '?') { ev.preventDefault(); return openHelp(); }
 
+    if (g.busy) skipAnimation();
+
     var k = ev.key;
     if (k === 'Enter' || k === ' ') {
       var focused = document.activeElement && document.activeElement.closest &&
@@ -582,26 +633,60 @@
   function buildLevelGrid() {
     el.levelGrid.innerHTML = '';
     var total = 0;
-    LEVELS.forEach(function (lv, i) {
-      var best = store.best[String(lv.id)];
-      var locked = i + 1 > store.unlocked;
-      if (best) total += best.crowns;
+    var chapters = root.CK.CHAPTERS || [{ n: 1, title: '', note: '' }];
 
-      var b = document.createElement('button');
-      b.className = 'lvl';
-      b.disabled = locked;
-      b.innerHTML =
-        '<span class="lvl-n">Level ' + (ROMAN[lv.id] || lv.id) + '</span>' +
-        '<span class="lvl-t">' + (locked ? '· · ·' : escapeHtml(lv.title)) + '</span>' +
-        '<span class="lvl-c">' + (locked ? '<span class="lvl-lock">Locked</span>' : crownRow(best ? best.crowns : 0)) + '</span>' +
-        '<span class="lvl-b">' + (best ? 'Best ' + best.moves + ' · ' + fmtTime(best.time) : (locked ? '' : 'Unplayed')) + '</span>';
-      b.addEventListener('click', function () {
-        el.ovLevels.hidden = true;
-        startLevel(i);
+    chapters.forEach(function (ch) {
+      var levels = LEVELS.filter(function (lv) { return (lv.chapter || 1) === ch.n; });
+      if (!levels.length) return;
+
+      var done = levels.filter(function (lv) { return store.best[String(lv.id)]; }).length;
+      var reached = levels.some(function (lv) {
+        return LEVELS.indexOf(lv) + 1 <= store.unlocked;
       });
-      el.levelGrid.appendChild(b);
+
+      var head = document.createElement('div');
+      head.className = 'chapter-head' + (reached ? '' : ' locked');
+      head.innerHTML =
+        '<h3>' + escapeHtml(ch.title) + '</h3>' +
+        '<span>' + (reached ? escapeHtml(ch.note) : 'Sealed') + '</span>' +
+        '<em>' + done + '/' + levels.length + '</em>';
+      el.levelGrid.appendChild(head);
+
+      var grid = document.createElement('div');
+      grid.className = 'chapter-grid';
+      el.levelGrid.appendChild(grid);
+      levels.forEach(function (lv) { grid.appendChild(levelCard(lv)); });
+    });
+
+    LEVELS.forEach(function (lv) {
+      var b = store.best[String(lv.id)];
+      if (b) total += b.crowns;
     });
     el.totalCrowns.textContent = total + ' / ' + (LEVELS.length * 3) + ' crowns';
+  }
+
+  function levelCard(lv) {
+    var i = LEVELS.indexOf(lv);
+    var best = store.best[String(lv.id)];
+    var locked = i + 1 > store.unlocked;
+
+    var b = document.createElement('button');
+    b.className = 'lvl';
+    b.disabled = locked;
+    b.innerHTML =
+      '<span class="lvl-n">Level ' + roman(lv.id) + '</span>' +
+      '<span class="lvl-t">' + (locked ? '· · ·' : escapeHtml(lv.title)) + '</span>' +
+      '<span class="lvl-c">' +
+        (locked ? '<span class="lvl-lock">Locked</span>' : crownRow(best ? best.crowns : 0)) +
+      '</span>' +
+      '<span class="lvl-b">' +
+        (best ? 'Best ' + best.moves + ' · ' + fmtTime(best.time) : (locked ? '' : 'Unplayed')) +
+      '</span>';
+    b.addEventListener('click', function () {
+      el.ovLevels.hidden = true;
+      startLevel(i);
+    });
+    return b;
   }
 
   function crownRow(n) {

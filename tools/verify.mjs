@@ -20,23 +20,8 @@ const E = globalThis.CK.engine;
 const DEFS = globalThis.CK.LEVELS;
 const sweep = process.argv.includes('--sweep');
 
-function reachableTiles(level) {
-  /* flood fill from the king so we can catch maps with an unreachable gate */
-  const k = level.pieces.find((p) => p.type === 'king');
-  const seen = new Set([k.col + ',' + k.row]);
-  const q = [[k.col, k.row]];
-  while (q.length) {
-    const [c, r] = q.shift();
-    for (const d of E.DIRS) {
-      const nc = c + d.dc, nr = r + d.dr;
-      if (E.isWall(level, nc, nr)) continue;
-      const key = nc + ',' + nr;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      q.push([nc, nr]);
-    }
-  }
-  return seen;
+function gateReachable(level) {
+  return E.kingCanReachGate(level, E.initState(level));
 }
 
 let bad = 0;
@@ -59,8 +44,7 @@ for (const def of DEFS) {
     }
   }
 
-  const reach = reachableTiles(level);
-  if (!reach.has(level.exit.col + ',' + level.exit.row)) {
+  if (!gateReachable(level)) {
     console.log(`L${def.id} ${def.title}: gate is walled off from the King`);
     bad++;
   }
@@ -87,6 +71,7 @@ for (const def of DEFS) {
   const kingOnly = soloIds.size === 1 && soloIds.has('k');
 
   rows.push({
+    ch: level.chapter,
     id: def.id,
     title: def.title,
     cap: level.capacity,
@@ -100,15 +85,15 @@ for (const def of DEFS) {
   });
 }
 
-console.log('\n  lvl  capacity  optimal  three  two   kingOnly  start   states   ms   title');
+console.log('\n  ch  lvl  capacity  optimal  three  two   kingOnly  start   states     ms   title');
 for (const r of rows) {
   const parOk = r.par && r.par.three === r.moves ? ' ' : '*';
   console.log(
-    `  ${String(r.id).padStart(3)}  ${String(r.cap).padStart(8)}  ` +
+    `  ${String(r.ch).padStart(2)}  ${String(r.id).padStart(3)}  ${String(r.cap).padStart(8)}  ` +
     `${String(r.moves).padStart(7)}${parOk} ${String(r.par?.three ?? '-').padStart(5)} ` +
     `${String(r.par?.two ?? '-').padStart(4)}   ${r.kingOnly ? 'YES ' : 'no  '}     ` +
     `${r.startRatio.toFixed(2).padStart(5)}  ${String(r.states).padStart(7)}  ` +
-    `${String(r.ms).padStart(4)}  ${r.title}`
+    `${String(r.ms).padStart(5)}  ${r.title}`
   );
 }
 console.log('  (* = par.three does not match the optimal move count)\n');

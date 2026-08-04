@@ -31,12 +31,21 @@ python3 -m http.server 8000     # or serve it, if you prefer
   behind it. One move, several pieces. Statues never move.
 - **Cradles** (the carved stone dishes) hold more than one piece at a time.
   Their weights add up, and a cradle will catch a rolling marble.
-- **Marbles** roll downhill once the board leans hard. **Ice** lets anything
-  standing on it slide much sooner.
+- **Marbles** roll downhill once the board leans hard. **Ice** only holds while
+  the meter reads Steady — past that, whatever is on it goes downhill.
+- **One-way ledges** (`> < ^ v`) may only be entered moving the way they point.
+  Anything that crosses one is on that side for good.
+- **Fragile floor** gives way the moment the last piece steps off it. Pushing a
+  piece across keeps the tile alive, because someone is always standing on it.
+- **Pressure plates** are stamped with the weight they need. While every plate
+  on the board is loaded, every **portcullis** is up. A gate only has to be up
+  at the moment you step under it.
 - The King has to arrive at the gate on a board that is still standing. A tip
   on the final move is still a tip.
-- Undo (`Z`) reverses a whole turn, including any sliding it caused. Restart is
-  `R`. Nothing is timed and nothing is random.
+- Undo (`Z`) reverses a whole turn — sliding, crumbling and all. Restart is `R`.
+  Nothing is timed and nothing is random.
+- Strand the King with no route left to the gate and the level ends gently, the
+  same as a tip.
 
 ## Controls
 
@@ -56,13 +65,16 @@ Level III is where the game says out loud that *any* piece can be moved, not
 just the King: its hint line stays on screen until you actually move something
 else, and the other pieces glow on arrival until you have done that once.
 
+Pressing on during an animation snaps it to the end rather than dropping the
+input, so quick play never loses a move.
+
 ## Layout
 
 ```
 index.html          markup and overlays
 css/style.css       everything visual, including the 3D board
 js/engine.js        pure rules: balance, movement, pushing, sliding, solver
-js/levels.js        the 13 handcrafted levels
+js/levels.js        the 30 handcrafted levels, in three chapters
 js/render.js        board and piece rendering, tilt
 js/audio.js         synthesised sound (no audio files)
 js/ui.js            input, turn playback, progress, menus
@@ -88,21 +100,53 @@ has an unreachable gate, or has no solution.
 
 ## The levels
 
-| | Level | Idea |
-|---|---|---|
-| I | The Quiet Gate | Move, and watch the board answer |
-| II | A Little Lean | Distance from the pivot changes the tilt |
-| III | The Counterweight | The direct route tips it; move the stone first |
-| IV | Farther Matters More | One barrel at the rim beats a statue near the centre |
-| V | The Heavy Stone | The obstacle is the counterweight |
-| VI | Share the Load | Two barrels in one cradle |
-| VII | The Push | Shoving a piece that is going your way anyway |
-| VIII | Back Before Forward | The gate is east; the only road runs west |
-| IX | Edge of the Kingdom | Opens in the warning zone and stays there |
-| X | The First Trial | Everything so far, in one chamber |
-| XI | The Rolling Court | Secure the marble before the board leans |
-| XII | Stone and Silence | Fixed statues; the iron only travels while the King holds the far side |
-| XIII | The King's Long Walk | Cross the ice while the board is level |
+Thirty levels in three chapters. The number after each is its proven optimum —
+the three-crown target.
+
+**I · The Quiet Kingdom** — weight, distance, and a board that answers
+
+| | Level | | Idea |
+|---|---|---|---|
+| I | The Quiet Gate | 4 | Move, and watch the board answer |
+| II | A Little Lean | 7 | Distance from the pivot changes the tilt |
+| III | The Counterweight | 6 | The direct route tips it; move the stone first |
+| IV | Farther Matters More | 7 | One barrel at the rim beats a statue near the centre |
+| V | The Heavy Stone | 10 | The obstacle is the counterweight |
+| VI | Share the Load | 9 | Two barrels in one cradle |
+| VII | The Push | 9 | Shoving a piece that is going your way anyway |
+| VIII | Back Before Forward | 11 | The gate is east; the only road runs west |
+| IX | Edge of the Kingdom | 13 | Opens in the warning zone and stays there |
+| X | The First Trial | 9 | Everything so far, in one chamber |
+
+**II · Loose Ground** — floors that slide, crumble, and only go one way
+
+| | Level | | Idea |
+|---|---|---|---|
+| XI | The Rolling Court | 8 | Secure the marble before the board leans |
+| XII | Stone and Silence | 15 | Statues never move; the iron travels only while the King holds the east |
+| XIII | The King's Long Walk | 10 | Cross the ice while the board reads Steady |
+| XIV | No Way Back | 11 | The short way east is one-way, so the iron walks the long way |
+| XV | The Wrong Side | 7 | The stone is trapped behind a ledge; only the barrel can reach the rim |
+| XVI | Thin Floors | 8 | Two travellers, opposite ways, exactly two crossings |
+| XVII | Carry It With You | 8 | Push it and you cross together; send it ahead and the floor goes too |
+| XVIII | The Long Way Round | 12 | The iron must walk the whole ring, shoving everything ahead of it |
+| XIX | Steady Underfoot | 6 | Level the board before the first step onto ice |
+| XX | The Second Trial | 12 | One ring, one crossing that crumbles, one marble that will not wait |
+
+**III · The Locked Halls** — gates that want paying for
+
+| | Level | | Idea |
+|---|---|---|---|
+| XXI | The Weighted Gate | 8 | The plate sits at the rim, so the gate is never free |
+| XXII | Do Not Move That | 7 | The barrel is already doing its job |
+| XXIII | The Iron Key | 15 | Only the iron is heavy enough, and the plate is where iron is worth nothing |
+| XXIV | Heavy Enough | 19 | The near piece will never be heavy enough |
+| XXV | The Short Hall | 7 | The gate only has to be up as you step under it |
+| XXVI | Two Locks | 17 | Every plate must be loaded before anything opens |
+| XXVII | One Trip Only | 16 | Whatever you send to that plate is never coming back |
+| XXVIII | Across and Staying | 11 | The floor to the plate holds for one crossing |
+| XXIX | Every Door Costs | 12 | A crumbling bridge east, a ledge west, a gate in between |
+| XXX | The Whole Kingdom | 28 | Everything, in one room, with nothing to spare |
 
 ## Accessibility
 

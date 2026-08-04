@@ -45,22 +45,50 @@
 
   /* ----------------------------------------------------------------- level */
 
-  var CHARS = { '.': 'floor', '#': 'wall', 'o': 'cradle', '~': 'slick', 'E': 'floor' };
+  /* One entry per legal map character. See js/levels.js for the legend. */
+  var CHARS = {
+    '.': { t: 'floor'   },
+    'E': { t: 'floor'   },
+    '#': { t: 'wall'    },
+    'o': { t: 'cradle'  },
+    '~': { t: 'slick'   },
+    'x': { t: 'fragile' },
+    'd': { t: 'door'    },
+    '1': { t: 'plate', need: 1 },
+    '2': { t: 'plate', need: 2 },
+    '4': { t: 'plate', need: 4 },
+    '>': { t: 'oneway', dc:  1, dr:  0 },
+    '<': { t: 'oneway', dc: -1, dr:  0 },
+    '^': { t: 'oneway', dc:  0, dr: -1 },
+    'v': { t: 'oneway', dc:  0, dr:  1 }
+  };
 
   function buildLevel(def) {
-    var cells = [], exit = null, r, c;
+    var cells = [], exit = null, plates = [], doors = [], fragiles = [], r, c;
+
     for (r = 0; r < GRID; r++) {
       var row = [];
       for (c = 0; c < GRID; c++) {
         var ch = def.map[r][c];
-        var t = CHARS[ch];
-        if (t == null) throw new Error('Level ' + def.id + ': bad map char "' + ch + '"');
-        row.push({ t: t });
+        var spec = CHARS[ch];
+        if (!spec) throw new Error('Level ' + def.id + ': bad map char "' + ch + '"');
+
+        var cell = { t: spec.t };
+        if (spec.need != null) cell.need = spec.need;
+        if (spec.dc != null) { cell.dc = spec.dc; cell.dr = spec.dr; }
+        row.push(cell);
+
         if (ch === 'E') exit = { col: c, row: r };
+        if (cell.t === 'plate') plates.push({ col: c, row: r, need: cell.need });
+        if (cell.t === 'door') doors.push({ col: c, row: r });
+        if (cell.t === 'fragile') fragiles.push({ col: c, row: r });
       }
       cells.push(row);
     }
     if (!exit) throw new Error('Level ' + def.id + ' has no exit');
+    if (doors.length && !plates.length) {
+      throw new Error('Level ' + def.id + ' has a door but no plate to open it');
+    }
 
     var pieces = def.pieces.map(function (p, i) {
       var out = { id: p.id || (p.type[0] + i), type: p.type, col: p.col, row: p.row };
@@ -76,16 +104,19 @@
 
     return {
       id: def.id,
+      chapter: def.chapter || 1,
       title: def.title,
       teach: def.teach || '',
       teachUntil: def.teachUntil || 'move',
-      hint: def.hint || '',
       idea: def.idea || '',
       pivot: def.pivot == null ? 3 : def.pivot,
       capacity: def.capacity,
       par: def.par || null,
       cells: cells,
       exit: exit,
+      plates: plates,
+      doors: doors,
+      fragiles: fragiles,
       pieces: pieces
     };
   }
@@ -106,8 +137,14 @@
     return out;
   }
 
+  function cloneBroken(broken) {
+    var out = {};
+    for (var k in broken) if (broken[k]) out[k] = true;
+    return out;
+  }
+
   function initState(level) {
-    return { pieces: clonePieces(level.pieces), moves: 0, status: 'play' };
+    return { pieces: clonePieces(level.pieces), broken: {}, moves: 0, status: 'play' };
   }
 
   function byId(pieces, id) {
@@ -144,16 +181,65 @@
   function cellAt(level, c, r) { return level.cells[r][c]; }
   function isWall(level, c, r) { return !inBounds(c, r) || level.cells[r][c].t === 'wall'; }
 
+  /* --------------------------------------------------------- doors & floor */
+
+  /* Every plate must carry the weight stamped on it, and then every door on
+   * the board is up. One shared circuit — simple to read off the board. */
+  function doorsOpen(level, pieces) {
+    for (var i = 0; i < level.plates.length; i++) {
+      var pl = level.plates[i], w = 0;
+      var on = piecesAt(pieces, pl.col, pl.row);
+      for (var j = 0; j < on.length; j++) w += weightOf(on[j]);
+      if (w < pl.need) return false;
+    }
+    return true;
+  }
+
+  function plateLoad(level, pieces, pl) {
+    var w = 0, on = piecesAt(pieces, pl.col, pl.row);
+    for (var j = 0; j < on.length; j++) w += weightOf(on[j]);
+    return w;
+  }
+
+  /* Can a tile be stepped onto at all, ignoring who is standing there and
+   * ignoring doors (those depend on where everything ends up, so they are
+   * checked against the finished arrangement instead). */
+  function floorOpen(level, broken, c, r, dc, dr) {
+    if (!inBounds(c, r)) return false;
+    var cell = level.cells[r][c];
+    if (cell.t === 'wall') return false;
+    if (broken && broken[c + ',' + r]) return false;
+    if (cell.t === 'oneway' && (cell.dc !== dc || cell.dr !== dr)) return false;
+    return true;
+  }
+
+  /* A fragile tile gives way the moment the last piece steps off it. */
+  function crumble(level, before, after, broken) {
+    if (!level.fragiles.length) return broken;
+    var out = null;
+    for (var i = 0; i < level.fragiles.length; i++) {
+      var f = level.fragiles[i], k = f.col + ',' + f.row;
+      if (broken[k]) continue;
+      if (!piecesAt(before, f.col, f.row).length) continue;
+      if (piecesAt(after, f.col, f.row).length) continue;
+      if (!out) out = cloneBroken(broken);
+      out[k] = true;
+    }
+    return out || broken;
+  }
+
   /* ---------------------------------------------------------------- moving */
 
   /* Walk the push chain. Returns the new piece array, or null if blocked.
    * Rules:
-   *   - walls and off-board stop everything
+   *   - walls, holes, off-board and one-way tiles taken backwards stop everything
    *   - an immovable piece stops everything
    *   - a CRADLE tile accepts a piece on top of whatever is already there
    *   - any other occupied tile pushes its occupants one further along
+   *   - a gate has to be up in the *resulting* position for anyone to end under it
    */
-  function planMove(level, pieces, id, dc, dr) {
+  function planMove(level, state, id, dc, dr) {
+    var pieces = state.pieces, broken = state.broken;
     var mover = byId(pieces, id);
     if (!mover || !movableP(mover)) return null;
     if ((dc === 0) === (dr === 0)) return null;
@@ -164,7 +250,7 @@
 
     while (true) {
       if (guard++ > GRID) return null;
-      if (isWall(level, c, r)) return null;
+      if (!floorOpen(level, broken, c, r, dc, dr)) return null;
 
       var occ = [], all = piecesAt(pieces, c, r);
       for (var i = 0; i < all.length; i++) {
@@ -183,12 +269,22 @@
       var p = byId(next, moving[m]);
       p.col += dc; p.row += dr;
     }
+
+    if (level.doors.length) {
+      var underGate = false;
+      for (var n = 0; n < moving.length; n++) {
+        var q = byId(next, moving[n]);
+        if (cellAt(level, q.col, q.row).t === 'door') underGate = true;
+      }
+      /* Leaving a doorway is always allowed; only arriving needs the gate up. */
+      if (underGate && !doorsOpen(level, next)) return null;
+    }
     return next;
   }
 
-  function pushedBy(level, pieces, id, dc, dr) {
+  function pushedBy(level, state, id, dc, dr) {
     /* which pieces (other than the mover) this move would shove */
-    var before = pieces, after = planMove(level, pieces, id, dc, dr);
+    var before = state.pieces, after = planMove(level, state, id, dc, dr);
     if (!after) return null;
     var out = [];
     for (var i = 0; i < before.length; i++) {
@@ -206,17 +302,19 @@
     { dc: -1, dr: 0, key: 'left' }
   ];
 
-  function legalMoves(level, pieces, id) {
+  function legalMoves(level, state, id) {
     var out = [];
     for (var i = 0; i < DIRS.length; i++) {
       var d = DIRS[i];
-      var after = planMove(level, pieces, id, d.dc, d.dr);
+      var after = planMove(level, state, id, d.dc, d.dr);
       if (!after) continue;
-      var self = byId(pieces, id);
+      var self = byId(state.pieces, id);
+      var willBreak = crumble(level, state.pieces, after, state.broken) !== state.broken;
       out.push({
         dc: d.dc, dr: d.dr, key: d.key,
         col: self.col + d.dc, row: self.row + d.dr,
-        pushes: pushedBy(level, pieces, id, d.dc, d.dr),
+        pushes: pushedBy(level, state, id, d.dc, d.dr),
+        breaks: willBreak,
         ratio: ratioOf(level, after)
       });
     }
@@ -225,7 +323,7 @@
 
   /* -------------------------------------------------------------- settling */
 
-  function slidesNow(level, p, absRatio) {
+  function slidesNow(level, broken, p, absRatio) {
     if (!movableP(p)) return false;
     var t = cellAt(level, p.col, p.row).t;
     if (t === 'cradle') return false;            /* a cradle catches things */
@@ -235,7 +333,7 @@
 
   /* Everything that can slide rolls downhill one tile at a time until the
    * board is calm enough or nothing can move. Fully deterministic. */
-  function settle(level, pieces) {
+  function settle(level, pieces, broken) {
     var frames = [], guard = 0;
     while (guard++ < 24) {
       var ratio = ratioOf(level, pieces);
@@ -244,36 +342,68 @@
 
       var movers = [];
       for (var i = 0; i < pieces.length; i++) {
-        if (slidesNow(level, pieces[i], Math.abs(ratio))) movers.push(pieces[i]);
+        if (slidesNow(level, broken, pieces[i], Math.abs(ratio))) movers.push(pieces[i]);
       }
       if (!movers.length) break;
       /* resolve the downhill-most piece first so trains of pieces slide cleanly */
       movers.sort(function (a, b) { return (b.col - a.col) * dir; });
 
+      var gatesUp = doorsOpen(level, pieces);
       var next = clonePieces(pieces), moved = false;
       for (var m = 0; m < movers.length; m++) {
         var p = byId(next, movers[m].id);
         var nc = p.col + dir;
-        if (isWall(level, nc, p.row)) continue;
+        if (!floorOpen(level, broken, nc, p.row, dir, 0)) continue;
+        if (cellAt(level, nc, p.row).t === 'door' && !gatesUp) continue;
         if (piecesAt(next, nc, p.row).length) continue;
         p.col = nc;
         moved = true;
       }
       if (!moved) break;
+      broken = crumble(level, pieces, next, broken);
       pieces = next;
-      frames.push(clonePieces(pieces));
+      frames.push({ pieces: clonePieces(pieces), broken: cloneBroken(broken) });
     }
-    return { pieces: pieces, frames: frames };
+    return { pieces: pieces, broken: broken, frames: frames };
+  }
+
+  /* ------------------------------------------------------------- dead ends */
+
+  /* Generous reachability: pieces are assumed movable out of the way and every
+   * gate assumed openable, so a false alarm is impossible. If the King cannot
+   * reach the gate even under those assumptions, the level really is lost —
+   * which one-way ledges and crumbling floors make possible. */
+  function kingCanReachGate(level, state) {
+    var k = king(state.pieces);
+    if (!k) return false;
+    var start = k.col + ',' + k.row;
+    var seen = {}, queue = [[k.col, k.row]];
+    seen[start] = true;
+    while (queue.length) {
+      var at = queue.shift(), c = at[0], r = at[1];
+      if (c === level.exit.col && r === level.exit.row) return true;
+      for (var i = 0; i < DIRS.length; i++) {
+        var d = DIRS[i], nc = c + d.dc, nr = r + d.dr;
+        if (!floorOpen(level, state.broken, nc, nr, d.dc, d.dr)) continue;
+        var key = nc + ',' + nr;
+        if (seen[key]) continue;
+        seen[key] = true;
+        queue.push([nc, nr]);
+      }
+    }
+    return false;
   }
 
   /* ------------------------------------------------------------------ turn */
 
-  function frameOf(level, pieces, kind) {
+  function frameOf(level, pieces, broken, kind) {
     var t = torqueOf(level, pieces);
     var ratio = t / level.capacity;
     return {
       kind: kind,
       pieces: clonePieces(pieces),
+      broken: cloneBroken(broken),
+      gates: doorsOpen(level, pieces),
       torque: t,
       ratio: ratio,
       zone: zoneOf(ratio).key
@@ -284,71 +414,81 @@
    * animation script: one board snapshot per visible sub-step. */
   function step(level, state, id, dc, dr) {
     if (state.status !== 'play') return { ok: false, reason: 'over' };
-    var after = planMove(level, state.pieces, id, dc, dr);
+    var after = planMove(level, state, id, dc, dr);
     if (!after) return { ok: false, reason: 'blocked' };
 
-    var frames = [frameOf(level, after, 'move')];
-    var s = settle(level, after);
-    for (var i = 0; i < s.frames.length; i++) frames.push(frameOf(level, s.frames[i], 'slide'));
+    var broken = crumble(level, state.pieces, after, state.broken);
+    var frames = [frameOf(level, after, broken, 'move')];
+
+    var s = settle(level, after, broken);
+    for (var i = 0; i < s.frames.length; i++) {
+      frames.push(frameOf(level, s.frames[i].pieces, s.frames[i].broken, 'slide'));
+    }
 
     var pieces = s.pieces;
+    broken = s.broken;
     var ratio = ratioOf(level, pieces);
     var k = king(pieces);
+    var next = { pieces: pieces, broken: broken, moves: state.moves + 1, status: 'play' };
+
     /* The King has to arrive on a board that is still standing, so a tip
      * beats a gate landing. Anything else would make the last move of a
      * tight level a coin flip between two rules. */
-    var status = 'play';
-    if (Math.abs(ratio) >= 1) status = 'tipped';
-    else if (k.col === level.exit.col && k.row === level.exit.row) status = 'won';
+    if (Math.abs(ratio) >= 1) next.status = 'tipped';
+    else if (k.col === level.exit.col && k.row === level.exit.row) next.status = 'won';
+    else if (!kingCanReachGate(level, next)) next.status = 'stranded';
 
-    frames[frames.length - 1].status = status;
-    return {
-      ok: true,
-      frames: frames,
-      state: { pieces: pieces, moves: state.moves + 1, status: status }
-    };
+    frames[frames.length - 1].status = next.status;
+    return { ok: true, frames: frames, state: next };
   }
 
   /* --------------------------------------------------------------- solving */
 
-  function keyOf(pieces) {
+  function keyOf(pieces, broken) {
     var parts = [];
     for (var i = 0; i < pieces.length; i++) {
       parts.push(pieces[i].id + ':' + pieces[i].col + ',' + pieces[i].row);
     }
-    return parts.sort().join('|');
+    parts.sort();
+    var holes = [];
+    for (var k in broken) if (broken[k]) holes.push(k);
+    return parts.join('|') + (holes.length ? '#' + holes.sort().join('#') : '');
   }
 
   /* Breadth-first search for the shortest solution. Used by tools/verify.mjs
    * to prove every shipped level is solvable and to set the crown targets. */
   function solve(level, opts) {
     opts = opts || {};
-    var limit = opts.limit || 400000;
+    var limit = opts.limit || 600000;
     var start = initState(level);
     var seen = Object.create(null);
-    var queue = [{ pieces: start.pieces, depth: 0, prev: null, move: null }];
-    seen[keyOf(start.pieces)] = true;
+    var queue = [{ pieces: start.pieces, broken: start.broken, depth: 0, prev: null, move: null }];
+    seen[keyOf(start.pieces, start.broken)] = true;
     var head = 0, visited = 0;
 
     while (head < queue.length && visited < limit) {
       var node = queue[head++];
       visited++;
+      var here = { pieces: node.pieces, broken: node.broken, moves: node.depth, status: 'play' };
+
       for (var i = 0; i < node.pieces.length; i++) {
         var p = node.pieces[i];
         if (!movableP(p)) continue;
         for (var d = 0; d < DIRS.length; d++) {
-          var res = step(level, { pieces: node.pieces, moves: node.depth, status: 'play' },
-                         p.id, DIRS[d].dc, DIRS[d].dr);
+          var res = step(level, here, p.id, DIRS[d].dc, DIRS[d].dr);
           if (!res.ok) continue;
-          if (res.state.status === 'tipped') continue;
-          var kk = keyOf(res.state.pieces);
-          var child = { pieces: res.state.pieces, depth: node.depth + 1, prev: node,
-                        move: { id: p.id, dir: DIRS[d].key } };
+          if (res.state.status === 'tipped' || res.state.status === 'stranded') continue;
+
+          var child = {
+            pieces: res.state.pieces, broken: res.state.broken,
+            depth: node.depth + 1, prev: node, move: { id: p.id, dir: DIRS[d].key }
+          };
           if (res.state.status === 'won') {
             var path = [], cur = child;
             while (cur && cur.move) { path.unshift(cur.move); cur = cur.prev; }
             return { solved: true, moves: child.depth, path: path, visited: visited };
           }
+          var kk = keyOf(res.state.pieces, res.state.broken);
           if (seen[kk]) continue;
           seen[kk] = true;
           queue.push(child);
@@ -360,14 +500,16 @@
 
   root.CK = root.CK || {};
   root.CK.engine = {
-    GRID: GRID, TYPES: TYPES, ZONES: ZONES, DIRS: DIRS,
+    GRID: GRID, TYPES: TYPES, ZONES: ZONES, DIRS: DIRS, CHARS: CHARS,
     SLIDE_ROLL: SLIDE_ROLL, SLIDE_SLICK: SLIDE_SLICK,
     typeOf: typeOf, weightOf: weightOf, movableP: movableP, rollsP: rollsP,
     buildLevel: buildLevel, initState: initState,
     byId: byId, piecesAt: piecesAt, king: king,
     torqueOf: torqueOf, ratioOf: ratioOf, zoneOf: zoneOf,
-    cellAt: cellAt, isWall: isWall, inBounds: inBounds,
+    cellAt: cellAt, isWall: isWall, inBounds: inBounds, floorOpen: floorOpen,
+    doorsOpen: doorsOpen, plateLoad: plateLoad, crumble: crumble,
+    kingCanReachGate: kingCanReachGate,
     planMove: planMove, legalMoves: legalMoves, step: step,
-    clonePieces: clonePieces, keyOf: keyOf, solve: solve
+    clonePieces: clonePieces, cloneBroken: cloneBroken, keyOf: keyOf, solve: solve
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -338,6 +338,122 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   50%      { box-shadow: inset 0 0 0 2px rgba(232, 200, 120, .95), 0 0 38px rgba(208, 168, 79, .6); }
 }
 
+/* ---- one-way ledges: a step you can take only one way ---- */
+
+.cell.oneway .cell-top {
+  background:
+    linear-gradient(155deg, #d3c09a, #b8a37c);
+  box-shadow: inset 0 0 0 1px rgba(74, 55, 40, .25);
+}
+.cell.oneway .ledge {
+  position: absolute;
+  inset: 22%;
+  color: rgba(74, 55, 40, .5);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cell.way-e .ledge { transform: rotate(0deg); }
+.cell.way-s .ledge { transform: rotate(90deg); }
+.cell.way-w .ledge { transform: rotate(180deg); }
+.cell.way-n .ledge { transform: rotate(270deg); }
+/* a raised lip on the side you cannot come back over */
+.cell.oneway .cell-top::after {
+  content: "";
+  position: absolute;
+  background: linear-gradient(#8b7550, #5d4c31);
+  box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+}
+.cell.way-e .cell-top::after { left: 0; top: 0; bottom: 0; width: 13%; }
+.cell.way-w .cell-top::after { right: 0; top: 0; bottom: 0; width: 13%; }
+.cell.way-s .cell-top::after { top: 0; left: 0; right: 0; height: 13%; }
+.cell.way-n .cell-top::after { bottom: 0; left: 0; right: 0; height: 13%; }
+
+/* ---- fragile floor ---- */
+
+.cell.fragile .cell-top {
+  background:
+    linear-gradient(155deg, #c9b795, #b6a37e);
+}
+.cell.fragile .cell-top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(41deg, transparent 47%, rgba(60, 42, 24, .55) 48%, transparent 49.5%),
+    linear-gradient(-63deg, transparent 55%, rgba(60, 42, 24, .45) 56%, transparent 57.5%),
+    linear-gradient(12deg, transparent 62%, rgba(60, 42, 24, .38) 63%, transparent 64.5%);
+}
+.cell.fragile.broken .cell-top {
+  background: radial-gradient(70% 70% at 50% 45%, #05070c 55%, #1a1712 100%);
+  border-color: #14110c;
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, .95);
+  animation: giveway 420ms cubic-bezier(.3, .1, .5, 1);
+}
+.cell.fragile.broken .cell-top::after { opacity: 0; transition: opacity 200ms; }
+@keyframes giveway {
+  0%   { transform: translateZ(0) scale(1); }
+  35%  { transform: translateZ(-6px) scale(.97); }
+  100% { transform: translateZ(0) scale(1); }
+}
+
+/* ---- pressure plates ---- */
+
+.cell.plate .cell-top {
+  background:
+    radial-gradient(64% 64% at 50% 46%, #a4936e 0%, #8d7d5c 62%, #c2b18e 66%, #c7b795 100%);
+  box-shadow: inset 0 0 10px rgba(40, 30, 16, .6);
+}
+.plate-need {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) rotateX(calc(-1 * var(--pitch)));
+  font: 600 calc(var(--tile) * .3) / 1 var(--font-display);
+  color: rgba(48, 36, 18, .7);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
+  transition: color 180ms, text-shadow 180ms;
+}
+.cell.plate.partial .cell-top { box-shadow: inset 0 0 12px rgba(216, 163, 63, .45); }
+.cell.plate.pressed .cell-top {
+  background:
+    radial-gradient(64% 64% at 50% 46%, #6d6144 0%, #5c5240 60%, #b9a880 66%, #c7b795 100%);
+  box-shadow: inset 0 3px 12px rgba(20, 14, 4, .8), 0 0 16px rgba(208, 168, 79, .35);
+}
+.cell.plate.pressed .plate-need { color: var(--brass); text-shadow: 0 0 8px rgba(208, 168, 79, .8); }
+
+/* ---- portcullis ---- */
+
+.cell.door .cell-top {
+  background: linear-gradient(150deg, #3b332a, #241f1a);
+  border-color: #17140f;
+}
+.gate-frame {
+  position: absolute;
+  inset: 0;
+  border: calc(var(--tile) * .09) solid #4a3728;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, .7);
+}
+.gate-bars {
+  position: absolute;
+  inset: calc(var(--tile) * .09);
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  overflow: hidden;
+}
+.gate-bars i {
+  width: 10%;
+  background: linear-gradient(90deg, #6d6a63, #a8a49a 40%, #55524b);
+  border-radius: 1px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, .6);
+  transform-origin: top center;
+  transition: transform 320ms cubic-bezier(.3, .8, .3, 1), opacity 260ms;
+}
+.cell.door.open .gate-bars i { transform: scaleY(.12); opacity: .5; }
+.cell.door.open .cell-top {
+  background: linear-gradient(150deg, #5c4f3c, #3d3527);
+  box-shadow: inset 0 0 14px rgba(208, 168, 79, .3);
+}
+
 /* move affordances */
 .cell .dot {
   position: absolute;
@@ -365,6 +481,14 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 }
 .cell.target.risky .dot { box-shadow: 0 0 0 3px rgba(207, 106, 74, .85), 0 2px 8px rgba(0, 0, 0, .5); }
 .cell.target.risky .cell-top { box-shadow: inset 0 0 0 2px rgba(207, 106, 74, .8), inset 0 0 16px rgba(207, 106, 74, .28); }
+/* stepping here costs you the floor you are standing on */
+.cell.target.crumbles .dot {
+  background: rgba(232, 214, 180, .9);
+  box-shadow: 0 0 0 3px rgba(90, 62, 30, .8), 0 2px 6px rgba(0, 0, 0, .5);
+}
+.cell.target.crumbles .cell-top {
+  box-shadow: inset 0 0 0 2px rgba(160, 124, 70, .85), inset 0 0 16px rgba(120, 84, 30, .35);
+}
 
 /* ---------------------------------------------------------------- pieces */
 
@@ -692,11 +816,47 @@ kbd {
 .total-crowns { font-size: 13px; color: var(--brass); font-variant-numeric: tabular-nums; }
 
 .level-grid {
+  padding: 4px 18px 16px;
+  overflow-y: auto;
+}
+.chapter-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 18px 2px 8px;
+  border-bottom: 1px solid rgba(208, 168, 79, .18);
+  margin-bottom: 12px;
+}
+.chapter-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--brass);
+  white-space: nowrap;
+}
+.chapter-head span {
+  flex: 1;
+  font-size: 11.5px;
+  color: var(--parchment-d);
+  opacity: .75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chapter-head em {
+  font-style: normal;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--parchment-d);
+  opacity: .8;
+}
+.chapter-head.locked h3 { color: var(--parchment-d); opacity: .55; }
+.chapter-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
-  padding: 16px 18px;
-  overflow-y: auto;
+  margin-bottom: 6px;
 }
 
 .lvl {

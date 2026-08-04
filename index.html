@@ -50,6 +50,8 @@
     </div>
   </header>
 
+  <p class="teach" id="teach"></p>
+
   <main class="stage" id="stage">
     <div class="scene" id="scene">
       <div class="rig" id="rig">
@@ -64,7 +66,33 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
-  <footer class="teach" id="teach"></footer>
+  <div class="pad" id="pad" hidden>
+    <div class="pad-dir">
+      <button class="pad-btn up" data-dc="0" data-dr="-1" aria-label="Move up">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+      </button>
+      <button class="pad-btn left" data-dc="-1" data-dr="0" aria-label="Move left">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button class="pad-btn down" data-dc="0" data-dr="1" aria-label="Move down">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <button class="pad-btn right" data-dc="1" data-dr="0" aria-label="Move right">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="pad-acts">
+      <button class="pad-act" id="pad-next">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h13"/><path d="M13 7l5 5-5 5"/><path d="M21 5v14"/></svg>
+        <span>Next piece</span>
+      </button>
+      <button class="pad-act" id="pad-undo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 0 12h-3"/></svg>
+        <span>Undo</span>
+      </button>
+    </div>
+  </div>
 
   <!-- ------------------------------------------------------------ overlays -->
 

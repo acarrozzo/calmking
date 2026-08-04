@@ -58,6 +58,10 @@ python3 -m http.server 8000     # or serve it, if you prefer
 | Levels | `Esc` |
 | How to play | `H` — also on the title card and the `?` button in the HUD |
 
+There is also an on-screen pad below the board — a direction cluster on the
+left, **Next piece** and **Undo** on the right. It appears by default on touch
+screens and can be forced on or off under Options → On-screen controls.
+
 Selection stays on the piece you last moved, so a counterweight can be walked
 several tiles without reselecting it.
 
@@ -157,3 +161,7 @@ animation on/off, animation speed, board shake, and a high-contrast board.
 
 Progress lives in `localStorage` under `calmking.v1` and can be erased from
 Options.
+
+**Options → Unlock every level** opens the whole map for playtesting without
+touching recorded crowns or best scores, so you can jump straight to a level
+and still switch back to check the real progression.

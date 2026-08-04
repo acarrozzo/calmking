@@ -19,12 +19,14 @@
    'win-replay', 'win-select', 'win-next', 'fail-title', 'fail-note', 'fail-undo',
    'fail-retry', 'level-grid', 'levels-close', 'btn-options', 'options', 'options-close',
    'btn-wipe', 'total-crowns', 'title-play', 'title-levels',
-   'btn-help', 'ov-help', 'help-close', 'title-help'
+   'btn-help', 'ov-help', 'help-close', 'title-help',
+   'pad', 'pad-next', 'pad-undo'
   ].forEach(function (id) { el[id.replace(/-(\w)/g, function (m, c) { return c.toUpperCase(); })] = $(id); });
 
   /* ---------------------------------------------------------- persistence */
 
-  var DEFAULT_OPTS = { sound: true, volume: 0.7, motion: true, shake: true, contrast: false, speed: 1 };
+  var DEFAULT_OPTS = { sound: true, volume: 0.7, motion: true, shake: true,
+                       contrast: false, speed: 1, pad: null, unlockAll: false };
   var store = loadStore();
 
   function loadStore() {
@@ -45,6 +47,14 @@
     try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) { /* private mode */ }
   }
 
+  /* Coarse pointer with no hover is the standard touch signal. */
+  function isTouch() {
+    return !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+  }
+  function padVisible() {
+    return store.opts.pad == null ? isTouch() : !!store.opts.pad;
+  }
+
   function applyOpts() {
     var o = store.opts;
     el.app.classList.toggle('calm-motion', !o.motion);
@@ -53,6 +63,15 @@
     document.documentElement.style.setProperty('--anim', (1 / o.speed).toFixed(3));
     A.setEnabled(o.sound);
     A.setVolume(o.volume);
+
+    var pad = padVisible();
+    el.pad.hidden = !pad;
+    el.app.classList.toggle('has-pad', pad);
+  }
+
+  /* Playtest switch: opens the whole map without touching recorded progress. */
+  function unlockedAt(i) {
+    return store.opts.unlockAll || i + 1 <= store.unlocked;
   }
 
   /* ---------------------------------------------------------------- state */
@@ -171,6 +190,7 @@
     el.statMoves.textContent = '0';
     el.statTime.textContent = fmtTime(g.elapsed);
     el.btnUndo.disabled = true;
+    el.padUndo.disabled = true;
 
     refreshTeach();
 
@@ -228,6 +248,7 @@
     g.history.push(snapshot());
     if (g.history.length > 300) g.history.shift();
     el.btnUndo.disabled = false;
+    el.padUndo.disabled = false;
 
     var moved = E.byId(g.gs.pieces, id);
     var sfx = A.forPiece(moved.type);
@@ -441,6 +462,7 @@
     g.lastZone = E.zoneOf(ratio).key;
     el.statMoves.textContent = String(g.gs.moves);
     el.btnUndo.disabled = !g.history.length;
+    el.padUndo.disabled = !g.history.length;
     A.play('select');
     if (!g.ticking) startClock();
     var keep = (g.lastMoved && E.byId(g.gs.pieces, g.lastMoved)) ? g.lastMoved : E.king(g.gs.pieces).id;
@@ -562,14 +584,22 @@
     }
     if (KEYDIR[k]) {
       ev.preventDefault();
-      if (!g.selected) { var kg = E.king(g.gs.pieces); if (kg) select(kg.id); }
-      if (g.selected) tryMove(g.selected, KEYDIR[k][0], KEYDIR[k][1]);
+      moveSelected(KEYDIR[k][0], KEYDIR[k][1]);
       return;
     }
     if (k.toLowerCase() === 'z') { ev.preventDefault(); undo(); }
     else if (k.toLowerCase() === 'r') { ev.preventDefault(); startLevel(g.index); }
     else if (k === 'Tab') { ev.preventDefault(); cycle(ev.shiftKey ? -1 : 1); }
   });
+
+  function moveSelected(dc, dr) {
+    if (!g.gs || g.gs.status !== 'play') return;
+    if (!g.selected) {
+      var kg = E.king(g.gs.pieces);
+      if (kg) select(kg.id, true);
+    }
+    if (g.selected) tryMove(g.selected, dc, dr);
+  }
 
   function cycle(dir) {
     var movables = g.gs.pieces.filter(function (p) { return E.movableP(p); });
@@ -594,6 +624,19 @@
   function openHelp() { stopClock(); show(el.ovHelp); }
   el.btnHelp.addEventListener('click', openHelp);
   el.helpClose.addEventListener('click', function () { closeSheet(el.ovHelp); });
+
+  Array.prototype.forEach.call(el.pad.querySelectorAll('.pad-btn'), function (b) {
+    b.addEventListener('click', function () {
+      A.unlock();
+      moveSelected(+b.dataset.dc, +b.dataset.dr);
+    });
+  });
+  el.padNext.addEventListener('click', function () {
+    A.unlock();
+    if (g.busy) skipAnimation();
+    if (g.gs && g.gs.status === 'play') cycle(1);
+  });
+  el.padUndo.addEventListener('click', function () { A.unlock(); undo(); });
 
   el.btnUndo.addEventListener('click', undo);
   el.btnRestart.addEventListener('click', function () { A.unlock(); startLevel(g.index); });
@@ -640,9 +683,7 @@
       if (!levels.length) return;
 
       var done = levels.filter(function (lv) { return store.best[String(lv.id)]; }).length;
-      var reached = levels.some(function (lv) {
-        return LEVELS.indexOf(lv) + 1 <= store.unlocked;
-      });
+      var reached = levels.some(function (lv) { return unlockedAt(LEVELS.indexOf(lv)); });
 
       var head = document.createElement('div');
       head.className = 'chapter-head' + (reached ? '' : ' locked');
@@ -668,7 +709,7 @@
   function levelCard(lv) {
     var i = LEVELS.indexOf(lv);
     var best = store.best[String(lv.id)];
-    var locked = i + 1 > store.unlocked;
+    var locked = !unlockedAt(i);
 
     var b = document.createElement('button');
     b.className = 'lvl';
@@ -711,7 +752,11 @@
     { key: 'motion', type: 'switch', label: 'Animation', note: 'Off snaps pieces straight into place.' },
     { key: 'speed', type: 'range', label: 'Animation speed', note: 'Slower gives you longer to read the board.', min: 0.5, max: 2, step: 0.1 },
     { key: 'shake', type: 'switch', label: 'Board shake', note: 'The jolt when the frame goes critical.' },
-    { key: 'contrast', type: 'switch', label: 'High contrast', note: 'Brighter floors, darker walls.' }
+    { key: 'contrast', type: 'switch', label: 'High contrast', note: 'Brighter floors, darker walls.' },
+    { key: 'pad', type: 'pad', label: 'On-screen controls',
+      note: 'A direction pad below the board. On by default with a touch screen.' },
+    { key: 'unlockAll', type: 'switch', label: 'Unlock every level',
+      note: 'Opens the whole map for playtesting. Your crowns and best scores are untouched.' }
   ];
 
   function openOptions() { buildOptions(); show(el.ovOptions); }
@@ -726,7 +771,19 @@
       left.innerHTML = '<b>' + o.label + '</b>' + (o.note ? '<span>' + o.note + '</span>' : '');
       row.appendChild(left);
 
-      if (o.type === 'switch') {
+      if (o.type === 'pad') {
+        var ps = document.createElement('button');
+        ps.className = 'switch';
+        ps.setAttribute('role', 'switch');
+        ps.setAttribute('aria-label', o.label);
+        ps.setAttribute('aria-checked', String(padVisible()));
+        ps.addEventListener('click', function () {
+          store.opts.pad = !padVisible();
+          ps.setAttribute('aria-checked', String(store.opts.pad));
+          applyOpts(); saveStore();
+        });
+        row.appendChild(ps);
+      } else if (o.type === 'switch') {
         var sw = document.createElement('button');
         sw.className = 'switch';
         sw.setAttribute('role', 'switch');
@@ -737,6 +794,7 @@
           sw.setAttribute('aria-checked', String(store.opts[o.key]));
           applyOpts(); saveStore();
           if (o.key === 'sound' && store.opts.sound) { A.unlock(); A.play('select'); }
+          if (o.key === 'unlockAll') buildLevelGrid();
         });
         row.appendChild(sw);
       } else {

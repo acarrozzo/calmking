@@ -5,10 +5,16 @@
   var E = root.CK.engine, R = root.CK.render, A = root.CK.audio;
   var LEVELS = root.CK.LEVELS.map(E.buildLevel);
   var STORE_KEY = 'calmking.v1';
-  var ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
-               'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
-               'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'];
-  function roman(n) { return ROMAN[n] || String(n); }
+  var ROMAN_PARTS = [[100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'],
+                     [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  function roman(n) {
+    if (!(n > 0)) return String(n);
+    var out = '';
+    for (var i = 0; i < ROMAN_PARTS.length; i++) {
+      while (n >= ROMAN_PARTS[i][0]) { out += ROMAN_PARTS[i][1]; n -= ROMAN_PARTS[i][0]; }
+    }
+    return out;
+  }
 
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
@@ -76,7 +82,7 @@
 
   /* ---------------------------------------------------------------- state */
 
-  var renderer = new R.Renderer(el.board, el.rig);
+  var renderer = new R.Renderer(el.board, el.rig, el.scene);
   var g = {
     index: 0,
     level: null,
@@ -102,7 +108,9 @@
     slide: function () { return !!g.did.slide; },
     oneway: function () { return !!g.did.oneway; },
     'break': function () { return !!g.did['break']; },
-    gate: function () { return !!g.did.gate; }
+    gate: function () { return !!g.did.gate; },
+    pin:  function () { return !!g.did.pin; },
+    royal: function () { return !!g.did.royal; }
   };
 
   function refreshTeach() {
@@ -115,6 +123,10 @@
 
   function tileState() {
     return { broken: g.gs.broken, gates: E.doorsOpen(g.level, g.gs.pieces) };
+  }
+
+  function hasQueen() {
+    return !!g.level && g.level.pieces.some(function (p) { return p.type === 'queen'; });
   }
 
   function fmtTime(ms) {
@@ -180,7 +192,7 @@
     hideAll();
     renderer.resetTip();
     renderer.mount(g.level);
-    renderer.draw(g.gs.pieces, tileState());
+    renderer.draw(g.gs.pieces, Object.assign({ instant: true }, tileState()));
     var ratio = E.ratioOf(g.level, g.gs.pieces);
     renderer.setTilt(ratio, true);
     updateMeter(ratio, E.zoneOf(ratio).key);
@@ -259,6 +271,7 @@
       g.did.other = true;
       if (!store.learned.other) { store.learned.other = true; saveStore(); }
     }
+    if (E.isRoyal(moved) && moved.type !== 'king') g.did.royal = true;
     if (res.frames[0].pieces.some(function (p) {
       var was = p.id !== id && E.byId(before, p.id);
       return was && (was.col !== p.col || was.row !== p.row);
@@ -268,6 +281,9 @@
     if (E.cellAt(g.level, landed.col, landed.row).t === 'oneway') g.did.oneway = true;
     for (var bk in res.state.broken) if (res.state.broken[bk]) g.did.break = true;
     if (g.level.plates.length && E.doorsOpen(g.level, res.state.pieces)) g.did.gate = true;
+    /* the pin has taught its lesson once the frame has actually re-hung itself */
+    if (g.level.pins.length &&
+        E.pivotOf(g.level, res.state.pieces) !== E.pivotOf(g.level, before)) g.did.pin = true;
     res.state.pieces.forEach(function (p) {
       if (E.piecesAt(res.state.pieces, p.col, p.row).length > 1) g.did.stack = true;
     });
@@ -350,7 +366,7 @@
   }
 
   function finishTurn() {
-    if (g.gs.status === 'won') return onWin();
+    if (g.gs.status === 'won') return winSequence();
     if (g.gs.status === 'tipped' || g.gs.status === 'stranded') return onFail();
     /* stay on the piece the player is working with, so a counterweight can be
        walked several tiles without reselecting it every turn */
@@ -366,10 +382,26 @@
     return 1;
   }
 
-  function onWin() {
+  /* When both royals make it, they get a beat to themselves at the gate before
+   * the scoring card comes up. Only for a level that actually has a pair —
+   * the King arriving alone still resolves immediately. */
+  function winSequence() {
+    if (!hasQueen()) return onWin();
     stopClock();
     deselect();
     A.play('gate');
+    renderer.cheer(g.level.exit.col, g.level.exit.row);
+    var at = g.index;
+    setTimeout(function () {
+      /* undo, restart or a jump to another level during the beat cancels it */
+      if (g.index === at && g.gs && g.gs.status === 'won') onWin({ quiet: true });
+    }, 1150);
+  }
+
+  function onWin(opts) {
+    stopClock();
+    deselect();
+    if (!(opts && opts.quiet)) A.play('gate');
     A.play('win', null, 0.18);
 
     var moves = g.gs.moves, time = g.elapsed;
@@ -388,7 +420,7 @@
     el.winBest.textContent = best.moves + ' · ' + fmtTime(best.time);
 
     el.winTitle.textContent = crowns === 3 ? 'Perfectly balanced.'
-      : crowns === 2 ? 'The King is through.'
+      : crowns === 2 ? (hasQueen() ? 'They are both through.' : 'The King is through.')
       : 'Safe, and that is enough.';
 
     el.winNote.textContent = crowns === 3
@@ -432,8 +464,10 @@
 
     if (stranded) {
       el.failTitle.textContent = 'The road to the gate is gone.';
-      el.failNote.textContent = 'Nothing is left standing between the King and the gate. ' +
-                                'Undo, and spend that crossing on someone else.';
+      el.failNote.textContent = (hasQueen()
+        ? 'One of them can no longer reach the gate. '
+        : 'Nothing is left standing between the King and the gate. ') +
+        'Undo, and spend that crossing on someone else.';
       A.play('deny');
     } else {
       renderer.tipOver(ratio);
@@ -455,6 +489,7 @@
     g.gs = { pieces: snap.pieces, broken: snap.broken, moves: snap.moves, status: snap.status };
     hideAll();
     renderer.resetTip();
+    renderer.clearCheer();
     renderer.draw(g.gs.pieces, tileState());
     var ratio = E.ratioOf(g.level, g.gs.pieces);
     renderer.setTilt(ratio);

@@ -11,12 +11,19 @@
 
   var TYPES = {
     king:   { w: 2, movable: true,  rolls: false, name: 'King',    cls: 'medium' },
+    queen:  { w: 1, movable: true,  rolls: false, name: 'Queen',   cls: 'light'  },
     barrel: { w: 1, movable: true,  rolls: false, name: 'Barrel',  cls: 'light'  },
     marble: { w: 1, movable: true,  rolls: true,  name: 'Marble',  cls: 'light'  },
     stone:  { w: 2, movable: true,  rolls: false, name: 'Stone',   cls: 'medium' },
     iron:   { w: 4, movable: true,  rolls: false, name: 'Iron',    cls: 'heavy'  },
     statue: { w: 3, movable: false, rolls: false, name: 'Statue',  cls: 'fixed'  }
   };
+
+  /* Royals are the pieces the level is about: every one of them has to be
+   * standing at the gate before it counts, and stranding any one of them
+   * loses. They are also the only pieces allowed to share the gate tile. */
+  var ROYAL = { king: true, queen: true };
+  function isRoyal(p) { return !!ROYAL[p.type]; }
 
   function typeOf(p) { return TYPES[p.type] || TYPES.stone; }
   function weightOf(p) { return p.w == null ? typeOf(p).w : p.w; }
@@ -54,6 +61,7 @@
     '~': { t: 'slick'   },
     'x': { t: 'fragile' },
     'd': { t: 'door'    },
+    'A': { t: 'pin'     },
     '1': { t: 'plate', need: 1 },
     '2': { t: 'plate', need: 2 },
     '4': { t: 'plate', need: 4 },
@@ -64,7 +72,7 @@
   };
 
   function buildLevel(def) {
-    var cells = [], exit = null, plates = [], doors = [], fragiles = [], r, c;
+    var cells = [], exit = null, plates = [], doors = [], fragiles = [], pins = [], r, c;
 
     for (r = 0; r < GRID; r++) {
       var row = [];
@@ -82,6 +90,7 @@
         if (cell.t === 'plate') plates.push({ col: c, row: r, need: cell.need });
         if (cell.t === 'door') doors.push({ col: c, row: r });
         if (cell.t === 'fragile') fragiles.push({ col: c, row: r });
+        if (cell.t === 'pin') pins.push({ col: c, row: r });
       }
       cells.push(row);
     }
@@ -117,6 +126,7 @@
       plates: plates,
       doors: doors,
       fragiles: fragiles,
+      pins: pins,
       pieces: pieces
     };
   }
@@ -165,10 +175,59 @@
     return null;
   }
 
+  function royals(pieces) {
+    var out = [];
+    for (var i = 0; i < pieces.length; i++) if (isRoyal(pieces[i])) out.push(pieces[i]);
+    return out;
+  }
+
+  function allRoyal(list) {
+    for (var i = 0; i < list.length; i++) if (!isRoyal(list[i])) return false;
+    return true;
+  }
+
+  function atExit(level, p) {
+    return p.col === level.exit.col && p.row === level.exit.row;
+  }
+
+  function isExit(level, c, r) {
+    return level.exit.col === c && level.exit.row === r;
+  }
+
+  /* Every royal has to be standing at the gate at once. With one royal that
+   * is exactly the old rule, so chapters I–III are untouched. */
+  function allRoyalsHome(level, pieces) {
+    var rs = royals(pieces);
+    if (!rs.length) return false;
+    for (var i = 0; i < rs.length; i++) if (!atExit(level, rs[i])) return false;
+    return true;
+  }
+
+  /* Where the frame is hanging from right now.
+   *
+   * A pin tile takes the pivot while something is standing on it. Load two
+   * pins in different columns and the frame has nowhere to choose between
+   * them, so it swings back to the level's own post — which is the only way
+   * some rooms can be levelled at all.
+   *
+   * Derived purely from where the pieces are, so it needs no history and
+   * costs the solver no extra state. */
+  function pivotOf(level, pieces) {
+    if (!level.pins || !level.pins.length) return level.pivot;
+    var col = -1;
+    for (var i = 0; i < level.pins.length; i++) {
+      var pin = level.pins[i];
+      if (!piecesAt(pieces, pin.col, pin.row).length) continue;
+      if (col >= 0 && col !== pin.col) return level.pivot;
+      col = pin.col;
+    }
+    return col < 0 ? level.pivot : col;
+  }
+
   function torqueOf(level, pieces) {
-    var t = 0;
+    var pivot = pivotOf(level, pieces), t = 0;
     for (var i = 0; i < pieces.length; i++) {
-      t += weightOf(pieces[i]) * (pieces[i].col - level.pivot);
+      t += weightOf(pieces[i]) * (pieces[i].col - pivot);
     }
     return t;
   }
@@ -245,6 +304,7 @@
     if ((dc === 0) === (dr === 0)) return null;
 
     var moving = [id];
+    var arriving = [mover];   /* whoever ends up on the tile under inspection */
     var c = mover.col + dc, r = mover.row + dr;
     var guard = 0;
 
@@ -259,8 +319,12 @@
       if (!occ.length) break;
       for (var j = 0; j < occ.length; j++) if (!movableP(occ[j])) return null;
       if (cellAt(level, c, r).t === 'cradle') break; /* share the tile */
+      /* The gate holds the royal family and nobody else, so the second one
+       * home joins the first instead of shoving them back out of it. */
+      if (isExit(level, c, r) && allRoyal(arriving) && allRoyal(occ)) break;
 
       for (var k = 0; k < occ.length; k++) moving.push(occ[k].id);
+      arriving = occ;
       c += dc; r += dr;
     }
 
@@ -370,21 +434,18 @@
   /* ------------------------------------------------------------- dead ends */
 
   /* Generous reachability: pieces are assumed movable out of the way and every
-   * gate assumed openable, so a false alarm is impossible. If the King cannot
+   * gate assumed openable, so a false alarm is impossible. If a royal cannot
    * reach the gate even under those assumptions, the level really is lost —
    * which one-way ledges and crumbling floors make possible. */
-  function kingCanReachGate(level, state) {
-    var k = king(state.pieces);
-    if (!k) return false;
-    var start = k.col + ',' + k.row;
-    var seen = {}, queue = [[k.col, k.row]];
-    seen[start] = true;
+  function canReachGate(level, broken, from) {
+    var seen = {}, queue = [[from.col, from.row]];
+    seen[from.col + ',' + from.row] = true;
     while (queue.length) {
       var at = queue.shift(), c = at[0], r = at[1];
       if (c === level.exit.col && r === level.exit.row) return true;
       for (var i = 0; i < DIRS.length; i++) {
         var d = DIRS[i], nc = c + d.dc, nr = r + d.dr;
-        if (!floorOpen(level, state.broken, nc, nr, d.dc, d.dr)) continue;
+        if (!floorOpen(level, broken, nc, nr, d.dc, d.dr)) continue;
         var key = nc + ',' + nr;
         if (seen[key]) continue;
         seen[key] = true;
@@ -392,6 +453,17 @@
       }
     }
     return false;
+  }
+
+  /* Strand any one of them and the level is over, so the Queen walking herself
+   * into a dead end loses just as surely as the King doing it. */
+  function royalsCanReachGate(level, state) {
+    var rs = royals(state.pieces);
+    if (!rs.length) return false;
+    for (var i = 0; i < rs.length; i++) {
+      if (!canReachGate(level, state.broken, rs[i])) return false;
+    }
+    return true;
   }
 
   /* ------------------------------------------------------------------ turn */
@@ -404,6 +476,7 @@
       pieces: clonePieces(pieces),
       broken: cloneBroken(broken),
       gates: doorsOpen(level, pieces),
+      pivot: pivotOf(level, pieces),
       torque: t,
       ratio: ratio,
       zone: zoneOf(ratio).key
@@ -428,15 +501,14 @@
     var pieces = s.pieces;
     broken = s.broken;
     var ratio = ratioOf(level, pieces);
-    var k = king(pieces);
     var next = { pieces: pieces, broken: broken, moves: state.moves + 1, status: 'play' };
 
-    /* The King has to arrive on a board that is still standing, so a tip
+    /* The royals have to arrive on a board that is still standing, so a tip
      * beats a gate landing. Anything else would make the last move of a
      * tight level a coin flip between two rules. */
     if (Math.abs(ratio) >= 1) next.status = 'tipped';
-    else if (k.col === level.exit.col && k.row === level.exit.row) next.status = 'won';
-    else if (!kingCanReachGate(level, next)) next.status = 'stranded';
+    else if (allRoyalsHome(level, pieces)) next.status = 'won';
+    else if (!royalsCanReachGate(level, next)) next.status = 'stranded';
 
     frames[frames.length - 1].status = next.status;
     return { ok: true, frames: frames, state: next };
@@ -503,12 +575,13 @@
     GRID: GRID, TYPES: TYPES, ZONES: ZONES, DIRS: DIRS, CHARS: CHARS,
     SLIDE_ROLL: SLIDE_ROLL, SLIDE_SLICK: SLIDE_SLICK,
     typeOf: typeOf, weightOf: weightOf, movableP: movableP, rollsP: rollsP,
+    isRoyal: isRoyal,
     buildLevel: buildLevel, initState: initState,
-    byId: byId, piecesAt: piecesAt, king: king,
-    torqueOf: torqueOf, ratioOf: ratioOf, zoneOf: zoneOf,
+    byId: byId, piecesAt: piecesAt, king: king, royals: royals,
+    torqueOf: torqueOf, ratioOf: ratioOf, zoneOf: zoneOf, pivotOf: pivotOf,
     cellAt: cellAt, isWall: isWall, inBounds: inBounds, floorOpen: floorOpen,
     doorsOpen: doorsOpen, plateLoad: plateLoad, crumble: crumble,
-    kingCanReachGate: kingCanReachGate,
+    royalsCanReachGate: royalsCanReachGate, allRoyalsHome: allRoyalsHome,
     planMove: planMove, legalMoves: legalMoves, step: step,
     clonePieces: clonePieces, cloneBroken: cloneBroken, keyOf: keyOf, solve: solve
   };

@@ -26,6 +26,20 @@
       '<circle cx="56" cy="54" r="1.9" fill="#5c4a30" stroke="none"/>' +
       '</svg>',
 
+    queen:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<defs><linearGradient id="qg" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#f6e6f2"/><stop offset="1" stop-color="#c1a2bd"/></linearGradient></defs>' +
+      '<path d="M31 118 h38 l-4-11 H35 z" fill="#ab90a8" stroke="#5f4a5e" stroke-width="2"/>' +
+      '<path d="M36 107 c-4-18 5-24 5-37 h18 c0 13 9 19 5 37 z" fill="url(#qg)" stroke="#5f4a5e" stroke-width="2"/>' +
+      '<ellipse cx="50" cy="72" rx="11" ry="4" fill="#e8d6e4" stroke="#5f4a5e" stroke-width="1.8"/>' +
+      '<circle cx="50" cy="60" r="11" fill="url(#qg)" stroke="#5f4a5e" stroke-width="2"/>' +
+      '<path d="M38 48 l2-19 6 8 4-11 4 11 6-8 2 19 z" fill="#d8ad52" stroke="#7d5f22" stroke-width="1.9"/>' +
+      '<circle cx="50" cy="24" r="3" fill="#e8d6e4" stroke="#7d5f22" stroke-width="1.6"/>' +
+      '<circle cx="46" cy="59" r="1.7" fill="#584252" stroke="none"/>' +
+      '<circle cx="55" cy="59" r="1.7" fill="#584252" stroke="none"/>' +
+      '</svg>',
+
     barrel:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
       '<path d="M30 116 c-8-22-8-40 0-62 h40 c8 22 8 40 0 62 z" fill="#9a6c3d" stroke="#4a3018" stroke-width="2.4"/>' +
@@ -80,11 +94,21 @@
     '<div class="gate-frame"></div><div class="gate-bars">' +
     '<i></i><i></i><i></i><i></i></div>';
 
+  /* A socket in the floor. Stand on it and the frame re-hangs itself here. */
+  var PIN_ART =
+    '<svg class="pin-art" viewBox="0 0 40 40" aria-hidden="true">' +
+    '<circle cx="20" cy="20" r="11" class="pin-socket"/>' +
+    '<path d="M20 9 L29 25 H11 z" class="pin-wedge"/></svg>';
+
   var GATE_ART =
     '<svg class="gate" viewBox="0 0 40 40" aria-hidden="true">' +
     '<path d="M8 34 V16 a12 12 0 0 1 24 0 v18" stroke-width="2.6"/>' +
     '<path d="M20 34 V6 M8 24 h24" stroke-width="1.8" opacity=".75"/>' +
     '<path d="M4 34 h32" stroke-width="3"/></svg>';
+
+  var HEART_ART =
+    '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M12 21s-8-5.1-8-10.6A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 3.4C20 15.9 12 21 12 21z"/></svg>';
 
   var CROWN_ART =
     '<svg viewBox="0 0 40 26" aria-hidden="true"><path d="M5 22 L2 6 l9 6 L20 1 l9 11 l9 -6 l-3 16 z" ' +
@@ -92,12 +116,16 @@
 
   /* ---------------------------------------------------------------- board */
 
-  function Renderer(boardEl, rigEl) {
+  function Renderer(boardEl, rigEl, sceneEl) {
     this.board = boardEl;
     this.rig = rigEl;
+    /* the fulcrum is a sibling of the rig, so the pivot column lives on the
+       scene where both of them can read it */
+    this.scene = sceneEl || rigEl.parentNode;
     this.cells = [];
     this.pieceEls = {};
     this.level = null;
+    this.pivot = null;
   }
 
   Renderer.prototype.mount = function (level) {
@@ -130,6 +158,9 @@
           el.setAttribute('aria-label', 'Pressure plate, needs weight ' + cell.need);
         } else if (cell.t === 'door') {
           top.innerHTML = PORTCULLIS_ART;
+        } else if (cell.t === 'pin') {
+          top.innerHTML = PIN_ART;
+          el.setAttribute('aria-label', 'Pivot pin');
         }
         el.appendChild(top);
 
@@ -147,7 +178,28 @@
         this.cells.push(el);
       }
     }
+    this.pivot = null;
+    this.setPivot(level.pivot, true);
     this.setTilt(0, true);
+  };
+
+  /* Slide the fulcrum under the board and swing the rig about the new column.
+   * Instant on mount, animated afterwards — the frame visibly re-hanging
+   * itself is the whole point of a pin. */
+  Renderer.prototype.setPivot = function (col, instant) {
+    if (col === this.pivot) return;
+    this.pivot = col;
+    if (instant) this.scene.classList.add('no-pivot-anim');
+    this.scene.style.setProperty('--pivot-col', String(col));
+    if (instant) {
+      void this.scene.offsetWidth;
+      this.scene.classList.remove('no-pivot-anim');
+    }
+    if (!this.level || !this.level.pins.length) return;
+    for (var i = 0; i < this.level.pins.length; i++) {
+      var pin = this.level.pins[i];
+      this.cellAt(pin.col, pin.row).classList.toggle('holding', pin.col === col);
+    }
   };
 
   Renderer.prototype.cellAt = function (c, r) {
@@ -164,6 +216,18 @@
     for (var j = 0; j < level.doors.length; j++) {
       var d = level.doors[j];
       self.cellAt(d.col, d.row).classList.toggle('open', !!gates);
+    }
+  };
+
+  /* `loaded` means something is standing here; `holding` means this pin is the
+   * one the frame is actually hanging from. Load two and every pin is loaded
+   * but none is holding, which is exactly what the player needs to see. */
+  Renderer.prototype.applyPins = function (pieces) {
+    var level = this.level;
+    for (var i = 0; i < level.pins.length; i++) {
+      var pin = level.pins[i];
+      var on = E.piecesAt(pieces, pin.col, pin.row).length;
+      this.cellAt(pin.col, pin.row).classList.toggle('loaded', on > 0);
     }
   };
 
@@ -229,6 +293,10 @@
       this.applyTiles(opts.broken, opts.gates);
     }
     this.applyPlates(pieces);
+    if (this.level.pins.length) {
+      this.applyPins(pieces);
+      this.setPivot(E.pivotOf(this.level, pieces), opts.instant);
+    }
 
     var groups = {};
     pieces.forEach(function (p) {
@@ -270,12 +338,13 @@
       });
     });
 
-    /* the gate wakes up when the King is beside it */
-    var king = E.king(pieces);
-    var exitCell = this.cellAt(this.level.exit.col, this.level.exit.row);
-    var near = king &&
-      Math.abs(king.col - this.level.exit.col) + Math.abs(king.row - this.level.exit.row) <= 1;
-    exitCell.classList.toggle('lit', !!near);
+    /* the gate wakes up when either royal is beside it */
+    var exit = this.level.exit;
+    var exitCell = this.cellAt(exit.col, exit.row);
+    var near = E.royals(pieces).some(function (p) {
+      return Math.abs(p.col - exit.col) + Math.abs(p.row - exit.row) <= 1;
+    });
+    exitCell.classList.toggle('lit', near);
   };
 
   /* ----------------------------------------------------------------- tilt */
@@ -353,6 +422,25 @@
     });
   };
 
+  /* The King and Queen are home and standing in the same doorway. Let them
+   * have a moment. Rides on the board so it leans with everything else. */
+  Renderer.prototype.cheer = function (col, row) {
+    var el = document.createElement('div');
+    el.className = 'cheer';
+    el.innerHTML = HEART_ART;
+    el.style.setProperty('--c', col);
+    el.style.setProperty('--r', row);
+    this.board.appendChild(el);
+    setTimeout(function () { el.remove(); }, 2600);
+    return el;
+  };
+
+  /* undo during the moment takes the moment back too */
+  Renderer.prototype.clearCheer = function () {
+    var all = this.board.querySelectorAll ? this.board.querySelectorAll('.cheer') : [];
+    for (var i = 0; i < all.length; i++) all[i].remove();
+  };
+
   Renderer.prototype.nudge = function (id) {
     var el = this.pieceEls[id];
     if (!el) return;
@@ -365,6 +453,7 @@
     Renderer: Renderer,
     ART: ART,
     CROWN_ART: CROWN_ART,
+    HEART_ART: HEART_ART,
     MAX_TILT: MAX_TILT
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

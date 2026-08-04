@@ -7,6 +7,8 @@ weight, and every weight pulls on the frame according to how far it sits from
 the centre. Move anything and the whole kingdom leans. Lean too far and it goes
 over.
 
+Later on the centre stops being the centre, and the King stops travelling alone.
+
 ## Running it
 
 No build step, no dependencies. Open `index.html`.
@@ -40,11 +42,19 @@ python3 -m http.server 8000     # or serve it, if you prefer
 - **Pressure plates** are stamped with the weight they need. While every plate
   on the board is loaded, every **portcullis** is up. A gate only has to be up
   at the moment you step under it.
-- The King has to arrive at the gate on a board that is still standing. A tip
+- **Pivot pins** (the carved sockets) move the fulcrum. While exactly one pin
+  is loaded, the whole frame hangs from that column instead of its own post —
+  so every weight on the board is suddenly worth something different. Load two
+  pins at once and the frame has nothing to choose between them, and swings
+  back to its default post. Nothing on any pin does the same.
+- **The Queen** weighs 1, against the King's 2. She travels almost free and can
+  hold almost nothing down. Both royals have to be standing at the gate before
+  it counts, and the gate holds them both. Strand either one and the level ends.
+- The royals have to arrive at the gate on a board that is still standing. A tip
   on the final move is still a tip.
 - Undo (`Z`) reverses a whole turn — sliding, crumbling and all. Restart is `R`.
   Nothing is timed and nothing is random.
-- Strand the King with no route left to the gate and the level ends gently, the
+- Strand a royal with no route left to the gate and the level ends gently, the
   same as a tip.
 
 ## Controls
@@ -78,7 +88,7 @@ input, so quick play never loses a move.
 index.html          markup and overlays
 css/style.css       everything visual, including the 3D board
 js/engine.js        pure rules: balance, movement, pushing, sliding, solver
-js/levels.js        the 30 handcrafted levels, in three chapters
+js/levels.js        the 50 handcrafted levels, in five chapters
 js/render.js        board and piece rendering, tilt
 js/audio.js         synthesised sound (no audio files)
 js/ui.js            input, turn playback, progress, menus
@@ -104,7 +114,7 @@ has an unreachable gate, or has no solution.
 
 ## The levels
 
-Thirty levels in three chapters. The number after each is its proven optimum —
+Fifty levels in five chapters. The number after each is its proven optimum —
 the three-crown target.
 
 **I · The Quiet Kingdom** — weight, distance, and a board that answers
@@ -151,6 +161,40 @@ the three-crown target.
 | XXVIII | Across and Staying | 11 | The floor to the plate holds for one crossing |
 | XXIX | Every Door Costs | 12 | A crumbling bridge east, a ledge west, a gate in between |
 | XXX | The Whole Kingdom | 28 | Everything, in one room, with nothing to spare |
+
+**IV · The Shifting Post** — the frame no longer hangs where it used to
+
+Every level here is unsolvable with its pins paved over: the fulcrum has to
+move, because the counterweight is stranded somewhere it can never come back
+from.
+
+| | Level | | Idea |
+|---|---|---|---|
+| XXXI | The Frame Re-Hung | 6 | Walk to the gate and it tips; move the post and it is free |
+| XXXII | The Wrong Side of the Ledge | 12 | The iron is stranded east; move the post, not the weight |
+| XXXIII | The Rolling Post | 11 | Move the post and the marble decides to roll |
+| XXXIV | Grip | 11 | The same ice is walkable or fatal depending on the post |
+| XXXV | One Crossing | 14 | The bridge holds once; have the post ready first |
+| XXXVI | Both Posts | 14 | The only way back to the middle is to hold both at once |
+| XXXVII | Two Posts, One Piece | 14 | Both posts want holding; one piece can hold either |
+| XXXVIII | A Post at the Gate | 11 | The post is the last tile before the gate |
+| XXXIX | Back to the Middle | 15 | Already balanced; everything you do breaks it |
+| XL | The Third Trial | 13 | The King is the post — someone must relieve him |
+
+**V · The Queen's Road** — two crowns, one frame, one gate
+
+| | Level | | Idea |
+|---|---|---|---|
+| XLI | The Queen | 9 | The gate holds them both, and wants both |
+| XLII | Two Crowns, One Frame | 15 | Whichever of them moves, the other pays for it |
+| XLIII | Two Crowns, Two Posts | 19 | A post holds a Queen as happily as an iron |
+| XLIV | Separate Roads | 20 | They cannot both take the good road |
+| XLV | The Long Slide | 21 | The ice delivers her; he is the hard part |
+| XLVI | Every Crown Costs | 22 | Two posts, one plate, one gate, two people |
+| XLVII | Her Weight in Nothing | 26 | The plate will not notice her standing on it |
+| XLVIII | After You | 26 | The bridge holds for one of them |
+| XLIX | One Trip, Two Crowns | 26 | What goes to that plate is never coming back |
+| L | The Calm King | 27 | Everything, and two crowns to bring home through it |
 
 ## Accessibility
 

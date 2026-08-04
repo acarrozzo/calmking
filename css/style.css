@@ -209,14 +209,20 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   height: var(--board);
   perspective: 1500px;
   perspective-origin: 50% 44%;
+  /* the column the frame is hanging from; pins move it during play */
+  --pivot-col: 3;
+  --pivot-x: calc((var(--pivot-col) + .5) * var(--tile));
 }
 
 .rig {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+  transform-origin: var(--pivot-x) 50%;
   transform: rotateX(var(--pitch)) rotateY(var(--tilt));
-  transition: transform calc(var(--tilt-ms) * var(--anim)) cubic-bezier(.24, .86, .3, 1);
+  transition:
+    transform calc(var(--tilt-ms) * var(--anim)) cubic-bezier(.24, .86, .3, 1),
+    transform-origin calc(var(--tilt-ms) * var(--anim)) cubic-bezier(.24, .86, .3, 1);
   will-change: transform;
 }
 
@@ -246,13 +252,16 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 
 .fulcrum {
   position: absolute;
-  left: 50%;
+  left: var(--pivot-x);
   bottom: calc(var(--tile) * -0.62);
   transform: translateX(-50%);
   display: grid;
   justify-items: center;
   pointer-events: none;
+  transition: left calc(var(--tilt-ms) * var(--anim)) cubic-bezier(.24, .86, .3, 1);
 }
+.scene.no-pivot-anim .fulcrum,
+.scene.no-pivot-anim .rig { transition: none; }
 .fulcrum-wedge {
   width: 0; height: 0;
   border-left: calc(var(--tile) * .42) solid transparent;
@@ -437,6 +446,92 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   box-shadow: inset 0 3px 12px rgba(20, 14, 4, .8), 0 0 16px rgba(208, 168, 79, .35);
 }
 .cell.plate.pressed .plate-need { color: var(--brass); text-shadow: 0 0 8px rgba(208, 168, 79, .8); }
+
+/* ---- pivot pin ---- */
+
+.cell.pin .cell-top {
+  background:
+    radial-gradient(58% 58% at 50% 46%, #9a8a66 0%, #857753 58%, #bfae8c 64%, #c7b795 100%);
+  box-shadow: inset 0 0 12px rgba(40, 30, 16, .55);
+}
+/* scoped like .ledge — a bare .pin would also match the cell, which carries
+   class="cell pin", and blow the tile up to fill the board */
+.cell.pin .pin-art {
+  position: absolute;
+  inset: 20%;
+  overflow: visible;
+}
+.cell.pin .pin-socket {
+  fill: rgba(30, 22, 12, .3);
+  stroke: rgba(74, 55, 40, .5);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 3;
+  transition: fill 200ms, stroke 200ms;
+}
+.cell.pin .pin-wedge {
+  fill: rgba(140, 118, 74, .55);
+  stroke: rgba(58, 44, 24, .6);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  transition: fill 200ms, stroke 200ms, filter 200ms;
+}
+/* something is standing here */
+.cell.pin.loaded .pin-socket { fill: rgba(20, 14, 4, .45); stroke: rgba(208, 168, 79, .5); }
+/* ...and this is the pin the frame is actually hanging from */
+.cell.pin.holding .cell-top {
+  background:
+    radial-gradient(58% 58% at 50% 46%, #6a5e40 0%, #59503c 58%, #b9a880 64%, #c7b795 100%);
+  box-shadow: inset 0 3px 12px rgba(20, 14, 4, .8), 0 0 18px rgba(208, 168, 79, .4);
+}
+.cell.pin.holding .pin-wedge {
+  fill: var(--brass);
+  stroke: #6b501a;
+  filter: drop-shadow(0 0 6px rgba(208, 168, 79, .85));
+}
+.cell.pin.holding .pin-socket { stroke: var(--brass); stroke-dasharray: none; }
+
+/* ---- the pair, reunited ---- */
+
+.cheer {
+  position: absolute;
+  left: 0; top: 0;
+  width: var(--tile);
+  height: var(--tile);
+  z-index: 60;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+  transform: translate3d(calc(var(--c) * var(--tile)), calc(var(--r) * var(--tile)), 34px);
+}
+.cheer svg {
+  width: 34%;
+  height: 34%;
+  fill: #d9607a;
+  stroke: #8f3049;
+  stroke-width: 1.1;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .45));
+  transform-origin: 50% 70%;
+  /* counter the board pitch so it faces the player, then drift up clear of
+     their heads — the figures stand nearly a full tile tall */
+  animation: cheer-rise 2.4s cubic-bezier(.22, .7, .3, 1) forwards;
+}
+@keyframes cheer-rise {
+  0%   { opacity: 0;   transform: rotateX(calc(-1 * var(--pitch))) translateY(-42%)  scale(.3); }
+  18%  { opacity: 1;   transform: rotateX(calc(-1 * var(--pitch))) translateY(-72%)  scale(1.15); }
+  32%  {               transform: rotateX(calc(-1 * var(--pitch))) translateY(-86%)  scale(.95); }
+  70%  { opacity: .95; transform: rotateX(calc(-1 * var(--pitch))) translateY(-132%) scale(1); }
+  100% { opacity: 0;   transform: rotateX(calc(-1 * var(--pitch))) translateY(-180%) scale(.9); }
+}
+/* with animation off it still appears, just without the drift */
+.app.calm-motion .cheer svg { animation: cheer-fade 2.4s linear forwards; }
+@keyframes cheer-fade {
+  0%, 100% { opacity: 0; }
+  15%, 70% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cheer svg { animation: cheer-fade 2.4s linear forwards; }
+}
 
 /* ---- portcullis ---- */
 

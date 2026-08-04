@@ -21,7 +21,7 @@ const DEFS = globalThis.CK.LEVELS;
 const sweep = process.argv.includes('--sweep');
 
 function gateReachable(level) {
-  return E.kingCanReachGate(level, E.initState(level));
+  return E.royalsCanReachGate(level, E.initState(level));
 }
 
 let bad = 0;
@@ -45,7 +45,7 @@ for (const def of DEFS) {
   }
 
   if (!gateReachable(level)) {
-    console.log(`L${def.id} ${def.title}: gate is walled off from the King`);
+    console.log(`L${def.id} ${def.title}: gate is walled off from a royal`);
     bad++;
   }
 
@@ -66,9 +66,12 @@ for (const def of DEFS) {
     continue;
   }
 
-  /* Can the King simply walk it alone? If so the level teaches nothing. */
+  /* Can the royals simply walk it alone? If so the level teaches nothing. */
+  const royalIds = new Set(
+    level.pieces.filter((p) => E.isRoyal(p)).map((p) => p.id)
+  );
   const soloIds = new Set(res.path.map((m) => m.id));
-  const kingOnly = soloIds.size === 1 && soloIds.has('k');
+  const kingOnly = [...soloIds].every((id) => royalIds.has(id));
 
   rows.push({
     ch: level.chapter,

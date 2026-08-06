@@ -9,14 +9,6 @@
   --brass-dim:  #8a6f34;
   --royal:      #33477e;
   --royal-lit:  #6f8ad4;
-  --stone:      #6d6a63;
-  --stone-lit:  #8d8a81;
-  --wood:       #4a3728;
-  --wood-lit:   #6b5138;
-  --floor:      #cbbb9b;
-  --floor-2:    #c0af8d;
-  --wall:       #3c3a36;
-  --wall-top:   #55524b;
   --good:       #6fae7d;
   --warn:       #d8a33f;
   --crit:       #cf6a4a;
@@ -30,6 +22,146 @@
   --shadow-soft: 0 24px 60px rgba(0, 0, 0, .55);
   --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
   --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* one easing for anything that settles under its own weight, one for
+     anything that answers a tap — used everywhere so the game has a feel */
+  --ease-settle: cubic-bezier(.24, .86, .3, 1);
+  --ease-snap:   cubic-bezier(.3, 1.4, .5, 1);
+
+  /* ---- board materials -------------------------------------------------
+     Every tile, fitting and frame edge is drawn from these. A board theme
+     is nothing but a different set of them, so nothing has to know which
+     theme is on. Default is Parchment. */
+
+  --floor-a:    #d3c3a3;
+  --floor-b:    #c0af8d;
+  --sheen:      .16;          /* strength of the specular sweep on a tile */
+  --checker:    .972;         /* brightness of every other floor tile */
+  --cell-line:  rgba(74, 55, 40, .17);
+  --etch:       rgba(74, 55, 40, .55);   /* engraved marks: arrows, digits */
+  --etch-soft:  rgba(74, 55, 40, .28);
+
+  --fit-deep:   rgba(52, 40, 24, .58);   /* recessed fittings: cradle, plate, pin */
+  --fit-rim:    rgba(255, 255, 255, .18);
+
+  --frame:      #4a3728;
+  --frame-dark: #2b1f16;
+  --frame-glint: rgba(208, 168, 79, .35);
+
+  --wall-a:     #55524b;
+  --wall-b:     #3c3a36;
+  --wall-line:  #23211e;
+  --wall-face-a:#2c2a27;
+  --wall-face-b:#191817;
+}
+
+/* --floor-bg has to be declared on the same element as the colours it is
+   built from. A custom property resolves the var()s inside it against the
+   element it is DECLARED on, not the one that uses it — so on :root it would
+   bake in the parchment defaults and no theme class could ever change it.
+   The theme classes land on .app, so this belongs on .app too. */
+.app {
+  --floor-bg:
+    radial-gradient(120% 120% at 28% 20%, rgba(255, 255, 255, var(--sheen)), rgba(0, 0, 0, 0) 62%),
+    linear-gradient(155deg, var(--floor-a), var(--floor-b));
+
+  /* large-scale material grain, laid across the whole board rather than
+     repeated per tile — see .cell-top::before */
+  --floor-tex: none;
+}
+
+/* ---------------------------------------------------------- board themes */
+
+.app.board-slate {
+  --floor-a:    #949aa4;
+  --floor-b:    #7c828d;
+  --sheen:      .2;
+  --checker:    .945;
+  --cell-line:  rgba(20, 26, 34, .26);
+  --etch:       rgba(18, 24, 32, .6);
+  --etch-soft:  rgba(18, 24, 32, .3);
+  --fit-deep:   rgba(12, 17, 24, .6);
+  --fit-rim:    rgba(255, 255, 255, .22);
+  --frame:      #2b3038;
+  --frame-dark: #14181e;
+  --frame-glint: rgba(208, 168, 79, .55);
+  --wall-a:     #454c56;
+  --wall-b:     #2b3038;
+  --wall-line:  #171b21;
+  --wall-face-a:#242930;
+  --wall-face-b:#13161b;
+}
+
+.app.board-marquetry {
+  --floor-a:    #c9a068;
+  --floor-b:    #b0854d;
+  --sheen:      .14;
+  --checker:    .78;          /* the checker is the whole point here */
+  --cell-line:  rgba(52, 30, 12, .3);
+  --etch:       rgba(48, 28, 10, .62);
+  --etch-soft:  rgba(48, 28, 10, .32);
+  --fit-deep:   rgba(40, 22, 8, .6);
+  --frame:      #4a2f1c;
+  --frame-dark: #26170d;
+  --frame-glint: rgba(208, 168, 79, .45);
+  /* the dark half of the checker is already a mid brown, so the walls have to
+     drop well below it or the two read as the same inlay */
+  --wall-a:     #3c2a1b;
+  --wall-b:     #22160c;
+  --wall-line:  #120a04;
+  --wall-face-a:#1b1109;
+  --wall-face-b:#0d0805;
+  /* a straight grain running with the board, so the checker reads as inlay */
+  --floor-bg:
+    repeating-linear-gradient(92deg, rgba(72, 42, 16, .09) 0 2px, rgba(0, 0, 0, 0) 2px 7px),
+    radial-gradient(120% 120% at 28% 20%, rgba(255, 255, 255, var(--sheen)), rgba(0, 0, 0, 0) 62%),
+    linear-gradient(155deg, var(--floor-a), var(--floor-b));
+}
+
+.app.board-marble {
+  --floor-a:    #f2f1ed;
+  --floor-b:    #dedcd6;
+  --sheen:      .3;
+  --checker:    .9;
+  --cell-line:  rgba(60, 62, 66, .2);
+  --etch:       rgba(48, 52, 58, .6);
+  --etch-soft:  rgba(48, 52, 58, .28);
+  --fit-deep:   rgba(44, 48, 54, .42);
+  --fit-rim:    rgba(255, 255, 255, .5);
+  --frame:      #3a3d42;
+  --frame-dark: #1d1f23;
+  --frame-glint: rgba(208, 168, 79, .5);
+  --wall-a:     #6e727a;
+  --wall-b:     #4a4e56;
+  --wall-line:  #292c31;
+  --wall-face-a:#3a3e45;
+  --wall-face-b:#22252a;
+  /* Three veins at odd angles. They belong to the slab, not the tile, so
+     they go through --floor-tex and run unbroken across the whole board. */
+  --floor-tex:
+    linear-gradient(114deg, rgba(0, 0, 0, 0) 43.4%, rgba(88, 94, 106, .2) 44.4%, rgba(0, 0, 0, 0) 45.2%),
+    linear-gradient(-58deg, rgba(0, 0, 0, 0) 61.6%, rgba(88, 94, 106, .14) 62.4%, rgba(0, 0, 0, 0) 63.4%),
+    linear-gradient(97deg, rgba(0, 0, 0, 0) 76.6%, rgba(88, 94, 106, .1) 77.2%, rgba(0, 0, 0, 0) 78%);
+}
+
+.app.board-ink {
+  --floor-a:    #ece7dc;
+  --floor-b:    #e0dacd;
+  --sheen:      .05;
+  --checker:    1;            /* no checker — the grid does the work */
+  --cell-line:  rgba(28, 32, 40, .3);
+  --etch:       rgba(28, 32, 40, .72);
+  --etch-soft:  rgba(28, 32, 40, .34);
+  --fit-deep:   rgba(28, 32, 40, .34);
+  --fit-rim:    rgba(255, 255, 255, .3);
+  --frame:      #232830;
+  --frame-dark: #0e1116;
+  --frame-glint: rgba(236, 224, 200, .3);
+  --wall-a:     #333944;
+  --wall-b:     #1e232b;
+  --wall-line:  #0d1015;
+  --wall-face-a:#1a1e25;
+  --wall-face-b:#0d1015;
 }
 
 * { box-sizing: border-box; }
@@ -230,15 +362,32 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  background: linear-gradient(160deg, var(--floor) 0%, var(--floor-2) 100%);
+  background: linear-gradient(160deg, var(--floor-a) 0%, var(--floor-b) 100%);
   border-radius: 4px;
   box-shadow:
-    0 0 0 calc(var(--tile) * .13) var(--wood),
-    0 0 0 calc(var(--tile) * .155) #2b1f16,
-    0 0 0 calc(var(--tile) * .175) rgba(208, 168, 79, .35);
+    0 0 0 calc(var(--tile) * .13) var(--frame),
+    0 0 0 calc(var(--tile) * .155) var(--frame-dark),
+    0 0 0 calc(var(--tile) * .175) var(--frame-glint);
 }
 
-/* board underside + cast shadow, painted flat behind the rig */
+/* A single overhead key light raking across the whole surface, sitting above
+   the tiles but below the pieces. One light for everything is what stops the
+   board reading as seven-by-seven separate gradients. */
+.board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background:
+    radial-gradient(78% 62% at 34% 12%, rgba(255, 255, 255, .13), rgba(255, 255, 255, 0) 68%),
+    linear-gradient(168deg, rgba(255, 255, 255, .05) 0%, rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, .16) 100%);
+  pointer-events: none;
+  z-index: 9;               /* pieces start at z-index 10 */
+  transform: translateZ(.4px);
+}
+
+/* board underside + cast shadow, painted flat behind the rig. It slides and
+   softens with the lean, so the board reads as lifting off its shadow. */
 .scene::after {
   content: "";
   position: absolute;
@@ -248,6 +397,11 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, .62), rgba(0, 0, 0, 0) 70%);
   filter: blur(2px);
   z-index: -1;
+  transform: translateX(calc(var(--lean, 0) * 5%)) scaleX(calc(1 - var(--lean-abs, 0) * .06));
+  opacity: calc(1 - var(--lean-abs, 0) * .25);
+  transition:
+    transform calc(var(--tilt-ms) * var(--anim)) var(--ease-settle),
+    opacity calc(var(--tilt-ms) * var(--anim)) var(--ease-settle);
 }
 
 .fulcrum {
@@ -289,22 +443,35 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .cell-top {
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(74, 55, 40, .17);
+  border: 1px solid var(--cell-line);
+  /* every non-wall tile starts as floor and layers its fitting on top, so a
+     board theme only has to restate --floor-bg to reskin all of them */
+  background: var(--floor-bg);
 }
 
-.cell.floor .cell-top {
-  background:
-    radial-gradient(120% 120% at 30% 24%, rgba(255, 255, 255, .16), rgba(0, 0, 0, 0) 60%),
-    linear-gradient(155deg, #cfbf9f, #bfae8c);
+.cell.floor:not(.exit):nth-child(even) .cell-top { filter: brightness(var(--checker)); }
+
+/* The slab's own grain, positioned by the tile's place in the board so it is
+   continuous across all forty-nine of them. Walls and doors are a different
+   material and sit this one out. */
+.cell:not(.wall):not(.door) .cell-top::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--floor-tex, none);
+  background-size: calc(var(--tile) * 7) calc(var(--tile) * 7);
+  background-position: calc(var(--col) * var(--tile) * -1) calc(var(--row) * var(--tile) * -1);
+  pointer-events: none;
 }
-.cell.floor:nth-child(even) .cell-top { filter: brightness(.985); }
 
 .cell.wall { transform: translateZ(var(--wall-h)); }
 .cell.wall .cell-top {
-  background:
-    linear-gradient(150deg, var(--wall-top), var(--wall) 70%);
-  border: 1px solid #23211e;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .045), inset 0 -3px 8px rgba(0, 0, 0, .4);
+  background: linear-gradient(150deg, var(--wall-a), var(--wall-b) 70%);
+  border: 1px solid var(--wall-line);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .09),
+    inset 0 0 0 2px rgba(255, 255, 255, .04),
+    inset 0 -3px 8px rgba(0, 0, 0, .4);
 }
 .cell-face {
   position: absolute;
@@ -313,22 +480,29 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   height: var(--wall-h);
   transform-origin: top center;
   transform: rotateX(-90deg);
-  background: linear-gradient(#2c2a27, #191817);
-  border: 1px solid #16150f;
+  background: linear-gradient(var(--wall-face-a), var(--wall-face-b));
+  border: 1px solid var(--wall-line);
   border-top: none;
 }
 
-.cell.cradle .cell-top {
+/* A fitting sunk into the floor: one recess shared by cradles, plates and
+   pins so all three read as the same piece of joinery in every theme. */
+.cell.cradle .cell-top,
+.cell.plate .cell-top,
+.cell.pin .cell-top {
   background:
-    radial-gradient(52% 52% at 50% 50%, #8f8261 0%, #a3956f 46%, #c3b391 62%, #c7b795 100%);
-  box-shadow: inset 0 0 12px rgba(52, 40, 24, .55);
+    radial-gradient(56% 56% at 50% 47%, var(--fit-deep) 0%, rgba(0, 0, 0, 0) 64%),
+    var(--floor-bg);
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, .22),
+    inset 0 1px 0 var(--fit-rim, rgba(255, 255, 255, .18));
 }
 .cell.cradle .cell-top::after {
   content: "";
   position: absolute;
   inset: 18%;
   border-radius: 50%;
-  border: 2px dashed rgba(74, 55, 40, .45);
+  border: 2px dashed var(--etch-soft);
 }
 
 .cell.slick .cell-top {
@@ -369,13 +543,14 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 
 .cell.oneway .cell-top {
   background:
-    linear-gradient(155deg, #d3c09a, #b8a37c);
-  box-shadow: inset 0 0 0 1px rgba(74, 55, 40, .25);
+    linear-gradient(155deg, rgba(255, 255, 255, .1), rgba(0, 0, 0, .07)),
+    var(--floor-bg);
+  box-shadow: inset 0 0 0 1px var(--etch-soft);
 }
 .cell.oneway .ledge {
   position: absolute;
   inset: 22%;
-  color: rgba(74, 55, 40, .5);
+  color: var(--etch);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -387,7 +562,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .cell.oneway .cell-top::after {
   content: "";
   position: absolute;
-  background: linear-gradient(#8b7550, #5d4c31);
+  background: linear-gradient(var(--frame), var(--frame-dark));
   box-shadow: 0 0 4px rgba(0, 0, 0, .4);
 }
 .cell.way-e .cell-top::after { left: 0; top: 0; bottom: 0; width: 13%; }
@@ -399,16 +574,17 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 
 .cell.fragile .cell-top {
   background:
-    linear-gradient(155deg, #c9b795, #b6a37e);
+    linear-gradient(155deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .1)),
+    var(--floor-bg);
 }
 .cell.fragile .cell-top::after {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(41deg, transparent 47%, rgba(60, 42, 24, .55) 48%, transparent 49.5%),
-    linear-gradient(-63deg, transparent 55%, rgba(60, 42, 24, .45) 56%, transparent 57.5%),
-    linear-gradient(12deg, transparent 62%, rgba(60, 42, 24, .38) 63%, transparent 64.5%);
+    linear-gradient(41deg, transparent 47%, var(--etch) 48%, transparent 49.5%),
+    linear-gradient(-63deg, transparent 55%, var(--etch-soft) 56%, transparent 57.5%),
+    linear-gradient(12deg, transparent 62%, var(--etch-soft) 63%, transparent 64.5%);
 }
 .cell.fragile.broken .cell-top {
   background: radial-gradient(70% 70% at 50% 45%, #05070c 55%, #1a1712 100%);
@@ -425,35 +601,34 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 
 /* ---- pressure plates ---- */
 
-.cell.plate .cell-top {
-  background:
-    radial-gradient(64% 64% at 50% 46%, #a4936e 0%, #8d7d5c 62%, #c2b18e 66%, #c7b795 100%);
-  box-shadow: inset 0 0 10px rgba(40, 30, 16, .6);
-}
 .plate-need {
   position: absolute;
   left: 50%; top: 50%;
   transform: translate(-50%, -50%) rotateX(calc(-1 * var(--pitch)));
   font: 600 calc(var(--tile) * .3) / 1 var(--font-display);
-  color: rgba(48, 36, 18, .7);
+  color: var(--etch);
   text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
-  transition: color 180ms, text-shadow 180ms;
+  transition: color 180ms, text-shadow 180ms, transform 220ms var(--ease-snap);
 }
-.cell.plate.partial .cell-top { box-shadow: inset 0 0 12px rgba(216, 163, 63, .45); }
+.cell.plate.partial .cell-top {
+  box-shadow: inset 0 0 12px rgba(216, 163, 63, .45), inset 0 1px 0 var(--fit-rim, rgba(255, 255, 255, .18));
+}
+/* a loaded plate sinks: deeper recess, and the digit drops back with it */
 .cell.plate.pressed .cell-top {
   background:
-    radial-gradient(64% 64% at 50% 46%, #6d6144 0%, #5c5240 60%, #b9a880 66%, #c7b795 100%);
+    radial-gradient(60% 60% at 50% 47%, rgba(0, 0, 0, .45) 0%, rgba(0, 0, 0, 0) 66%),
+    radial-gradient(56% 56% at 50% 47%, var(--fit-deep) 0%, rgba(0, 0, 0, 0) 64%),
+    var(--floor-bg);
   box-shadow: inset 0 3px 12px rgba(20, 14, 4, .8), 0 0 16px rgba(208, 168, 79, .35);
 }
-.cell.plate.pressed .plate-need { color: var(--brass); text-shadow: 0 0 8px rgba(208, 168, 79, .8); }
+.cell.plate.pressed .plate-need {
+  color: var(--brass);
+  text-shadow: 0 0 8px rgba(208, 168, 79, .8);
+  transform: translate(-50%, -50%) rotateX(calc(-1 * var(--pitch))) scale(.88);
+}
 
 /* ---- pivot pin ---- */
 
-.cell.pin .cell-top {
-  background:
-    radial-gradient(58% 58% at 50% 46%, #9a8a66 0%, #857753 58%, #bfae8c 64%, #c7b795 100%);
-  box-shadow: inset 0 0 12px rgba(40, 30, 16, .55);
-}
 /* scoped like .ledge — a bare .pin would also match the cell, which carries
    class="cell pin", and blow the tile up to fill the board */
 .cell.pin .pin-art {
@@ -462,25 +637,27 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   overflow: visible;
 }
 .cell.pin .pin-socket {
-  fill: rgba(30, 22, 12, .3);
-  stroke: rgba(74, 55, 40, .5);
+  fill: rgba(0, 0, 0, .18);
+  stroke: var(--etch-soft);
   stroke-width: 1.6;
   stroke-dasharray: 3 3;
   transition: fill 200ms, stroke 200ms;
 }
 .cell.pin .pin-wedge {
-  fill: rgba(140, 118, 74, .55);
-  stroke: rgba(58, 44, 24, .6);
+  fill: var(--etch-soft);
+  stroke: var(--etch);
   stroke-width: 1.4;
   stroke-linejoin: round;
   transition: fill 200ms, stroke 200ms, filter 200ms;
 }
 /* something is standing here */
-.cell.pin.loaded .pin-socket { fill: rgba(20, 14, 4, .45); stroke: rgba(208, 168, 79, .5); }
+.cell.pin.loaded .pin-socket { fill: rgba(0, 0, 0, .32); stroke: rgba(208, 168, 79, .5); }
 /* ...and this is the pin the frame is actually hanging from */
 .cell.pin.holding .cell-top {
   background:
-    radial-gradient(58% 58% at 50% 46%, #6a5e40 0%, #59503c 58%, #b9a880 64%, #c7b795 100%);
+    radial-gradient(60% 60% at 50% 47%, rgba(0, 0, 0, .45) 0%, rgba(0, 0, 0, 0) 66%),
+    radial-gradient(56% 56% at 50% 47%, var(--fit-deep) 0%, rgba(0, 0, 0, 0) 64%),
+    var(--floor-bg);
   box-shadow: inset 0 3px 12px rgba(20, 14, 4, .8), 0 0 18px rgba(208, 168, 79, .4);
 }
 .cell.pin.holding .pin-wedge {
@@ -536,13 +713,13 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 /* ---- portcullis ---- */
 
 .cell.door .cell-top {
-  background: linear-gradient(150deg, #3b332a, #241f1a);
-  border-color: #17140f;
+  background: linear-gradient(150deg, var(--frame), var(--frame-dark));
+  border-color: var(--wall-line);
 }
 .gate-frame {
   position: absolute;
   inset: 0;
-  border: calc(var(--tile) * .09) solid #4a3728;
+  border: calc(var(--tile) * .09) solid var(--frame);
   box-shadow: inset 0 0 10px rgba(0, 0, 0, .7);
 }
 .gate-bars {
@@ -563,7 +740,9 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 }
 .cell.door.open .gate-bars i { transform: scaleY(.12); opacity: .5; }
 .cell.door.open .cell-top {
-  background: linear-gradient(150deg, #5c4f3c, #3d3527);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .02)),
+    linear-gradient(150deg, var(--frame), var(--frame-dark));
   box-shadow: inset 0 0 14px rgba(208, 168, 79, .3);
 }
 
@@ -574,17 +753,27 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   width: 26%; height: 26%;
   margin: -13% 0 0 -13%;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .82);
+  background: rgba(255, 255, 255, .86);
   box-shadow: 0 0 0 3px rgba(51, 71, 126, .55), 0 2px 6px rgba(0, 0, 0, .4);
   opacity: 0;
   transform: scale(.4);
-  transition: opacity 130ms, transform 160ms cubic-bezier(.3, 1.5, .5, 1);
+  transition: opacity 130ms, transform 180ms var(--ease-snap);
   pointer-events: none;
 }
-.cell.target .dot { opacity: 1; transform: scale(1); }
+.cell.target .dot {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: calc(var(--i, 0) * 26ms);
+}
 .cell.target .cell-top {
   cursor: pointer;
   box-shadow: inset 0 0 0 2px rgba(160, 186, 255, .55), inset 0 0 14px rgba(111, 138, 212, .25);
+  transition: box-shadow 180ms ease-out calc(var(--i, 0) * 26ms);
+}
+.app.calm-motion .cell.target .dot,
+.app.calm-motion .cell.target .cell-top { transition-delay: 0ms; }
+@media (prefers-reduced-motion: reduce) {
+  .cell.target .dot, .cell.target .cell-top { transition-delay: 0ms; }
 }
 /* a target tile that already holds a piece is a shove: ring the tile, drop the
    dot, because the dot would only ever peek out from behind the piece */
@@ -612,19 +801,33 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   height: var(--tile);
   transform-style: preserve-3d;
   transform: translate3d(calc(var(--c) * var(--tile)), calc(var(--r) * var(--tile)), var(--lift));
-  transition: transform calc(var(--move-ms) * var(--anim)) cubic-bezier(.3, .8, .3, 1);
+  transition: transform calc(var(--move-ms) * var(--anim)) cubic-bezier(.32, .78, .28, 1);
   will-change: transform;
 }
-.piece.sliding { transition-duration: calc(var(--move-ms) * var(--anim) * 1.35); transition-timing-function: cubic-bezier(.4, 0, .5, 1); }
+/* a slide is carried by momentum, so it eases out of the tile rather than
+   into it — the opposite shape of a deliberate step */
+.piece.sliding {
+  transition-duration: calc(var(--move-ms) * var(--anim) * 1.35);
+  transition-timing-function: cubic-bezier(.42, 0, .38, 1);
+}
 
+/* The contact shadow leans away from the light and loosens as the board
+   does, which is most of what sells the pieces as standing on the surface. */
 .p-shadow {
   position: absolute;
   left: 50%; top: 58%;
   width: 46%; height: 17%;
   margin-left: -23%;
   border-radius: 50%;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(38, 26, 12, .42), rgba(38, 26, 12, 0) 74%);
-  transform: translateZ(calc(-1 * var(--lift))) translate(var(--sx, 0px), var(--sy, 0px));
+  background: radial-gradient(50% 50% at 50% 50%, rgba(30, 20, 8, .46), rgba(30, 20, 8, 0) 74%);
+  transform:
+    translateZ(calc(-1 * var(--lift)))
+    translate(calc(var(--sx, 0px) + var(--lean, 0) * 6%), var(--sy, 0px))
+    scale(calc(1 + var(--lean-abs, 0) * .2), 1);
+  opacity: calc(1 - var(--lean-abs, 0) * .3);
+  transition:
+    transform calc(var(--tilt-ms) * var(--anim)) var(--ease-settle),
+    opacity calc(var(--tilt-ms) * var(--anim)) var(--ease-settle);
 }
 
 .p-fig {
@@ -637,7 +840,16 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   place-items: end center;
   pointer-events: none;
 }
-.p-fig svg { width: 100%; height: 100%; overflow: visible; }
+.p-fig svg {
+  width: 100%; height: 100%;
+  overflow: visible;
+  /* one drop shadow on the figure itself, matching the board's key light */
+  filter: drop-shadow(calc(var(--tile) * .012) calc(var(--tile) * .02) calc(var(--tile) * .022) rgba(24, 16, 6, .38));
+}
+
+/* The medallions are wider and shorter than the standing figures, so they
+   sit a little differently on the tile. */
+.app.pieces-token .p-fig { height: 84%; bottom: 23%; }
 
 .piece { pointer-events: none; }
 .piece .hit {
@@ -1094,6 +1306,49 @@ kbd {
 .opt-l b { font-weight: 500; font-size: 14px; }
 .opt-l span { font-size: 11.5px; color: var(--parchment-d); opacity: .8; }
 
+/* a choice with more than two answers needs the full width, so it stacks
+   under its label instead of being squeezed beside it. The explicit single
+   column is load-bearing: .opt's justify-content would otherwise size the
+   implicit column to its content and leave the control short of the edge. */
+.opt-wide {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-content: stretch;
+  gap: 9px;
+}
+
+/* Sized so the five board names sit on one row in the options sheet, and
+   wrap rather than shrink to nothing on a narrow phone. */
+.seg {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(66px, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid rgba(236, 224, 200, .14);
+  background: rgba(0, 0, 0, .3);
+}
+.seg-b {
+  padding: 7px 2px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--parchment-d);
+  font: 500 11.5px/1 var(--font-ui);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 140ms, color 140ms, border-color 140ms;
+}
+.seg-b:hover { background: rgba(236, 224, 200, .09); color: var(--parchment); }
+.seg-b[aria-checked="true"] {
+  background: rgba(208, 168, 79, .17);
+  border-color: rgba(208, 168, 79, .55);
+  color: var(--brass);
+}
+.seg-b:focus-visible { outline: 2px solid var(--royal-lit); outline-offset: 1px; }
+
 .switch {
   position: relative;
   width: 44px; height: 25px;
@@ -1142,16 +1397,28 @@ kbd {
 
 /* --------------------------------------------------------- high contrast */
 
+/* Pushes the shared material variables rather than restyling tiles, so it
+   layers over whichever board theme is on instead of replacing it. Declared
+   after the themes, so it wins at equal specificity. */
 .app.contrast {
-  --floor: #efe6d0;
-  --floor-2: #e6dbc2;
-  --wall: #1b1a18;
-  --wall-top: #3a3833;
+  --floor-a: #f2ebd8;
+  --floor-b: #e4dbc4;
+  --sheen: .05;
+  --checker: .9;
+  --cell-line: rgba(20, 16, 10, .5);
+  --etch: rgba(16, 14, 10, .85);
+  --etch-soft: rgba(16, 14, 10, .5);
+  --fit-deep: rgba(16, 14, 10, .5);
+  --wall-a: #33312c;
+  --wall-b: #16150f;
+  --wall-line: #000;
+  --wall-face-a: #17160f;
+  --wall-face-b: #0a0a07;
+  --frame-dark: #000;
 }
-.app.contrast .cell-top { border-color: rgba(20, 16, 10, .5); }
-.app.contrast .cell.floor .cell-top { background: linear-gradient(155deg, #f0e7d2, #e2d7bd); }
 .app.contrast .cell.exit .cell-top { background: linear-gradient(150deg, #6a5426, #4a3a19); }
 .app.contrast .p-pips i { background: #11100e; box-shadow: 0 0 0 1px #fff; }
+.app.contrast .board::before { display: none; }
 
 /* ------------------------------------------------------- reduced motion */
 

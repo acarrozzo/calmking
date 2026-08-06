@@ -11,79 +11,204 @@
 
   /* ------------------------------------------------------------------ art */
 
-  var ART = {
+  /* Two carved sets of the same seven pieces. Every figure shares the same
+   * 100x120 box and stands on the same baseline near y=118, because .p-fig
+   * bottom-aligns them on the tile. Weight is never carried by colour alone:
+   * height, bulk and the pips under the piece all say it too.
+   *
+   * Gradient ids are prefixed per set (ck-, tk-) — the document holds one copy
+   * of the art per piece on the board, so unprefixed ids would collide. */
+
+  var ART_SETS = {};
+
+  /* ---- carved: the storybook figures. Bell-shaped robes and rounded stock
+   * rather than the old flat-sided ones, a rim light down the lit side, and a
+   * warm outline instead of a near-black one. Note that the stylesheet gives
+   * every svg a currentColor stroke, so fill-only shapes must say stroke="none"
+   * or they pick up a cream outline. ---- */
+
+  ART_SETS.carved = {
     king:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
-      '<defs><linearGradient id="kg" x1="0" y1="0" x2="1" y2="1">' +
-      '<stop offset="0" stop-color="#fbf1dc"/><stop offset="1" stop-color="#cdb994"/></linearGradient></defs>' +
-      '<path d="M28 118 h44 l-5-12 H33 z" fill="#b9a480" stroke="#6b5a3d" stroke-width="2"/>' +
-      '<path d="M34 106 c-2-16 4-22 4-34 h24 c0 12 6 18 4 34 z" fill="url(#kg)" stroke="#6b5a3d" stroke-width="2"/>' +
-      '<ellipse cx="50" cy="70" rx="14" ry="5" fill="#e2d3b2" stroke="#6b5a3d" stroke-width="2"/>' +
-      '<circle cx="50" cy="55" r="13" fill="url(#kg)" stroke="#6b5a3d" stroke-width="2"/>' +
-      '<path d="M34 42 l3-24 11 10 L50 14 l6 14 11-10 3 24 z" fill="#d8ad52" stroke="#7d5f22" stroke-width="2"/>' +
-      '<path d="M34 42 h32" stroke="#7d5f22" stroke-width="3"/>' +
-      '<circle cx="45" cy="54" r="1.9" fill="#5c4a30" stroke="none"/>' +
-      '<circle cx="56" cy="54" r="1.9" fill="#5c4a30" stroke="none"/>' +
+      '<defs><linearGradient id="ck-kg" x1=".18" y1="0" x2=".86" y2="1">' +
+      '<stop offset="0" stop-color="#fdf5e4"/><stop offset=".52" stop-color="#e8d9ba"/>' +
+      '<stop offset="1" stop-color="#c0a882"/></linearGradient></defs>' +
+      '<ellipse cx="50" cy="114" rx="25" ry="5.5" fill="#af9a75" stroke="#6b5a3d" stroke-width="1.8"/>' +
+      '<path d="M50 67 c-11 0-16.5 8-18 20.5 -1.2 10-3 18.5-5.5 27 h47 c-2.5-8.5-4.3-17-5.5-27 -1.5-12.5-7-20.5-18-20.5 z" ' +
+      'fill="url(#ck-kg)" stroke="#6b5a3d" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M35 78 c9 5.5 21 5.5 30 0" fill="none" stroke="#6b5a3d" stroke-width="1.7" opacity=".75"/>' +
+      '<path d="M37 85 c-2 11-3.4 20-5 29" fill="none" stroke="#fffaf0" stroke-width="2.4" opacity=".5"/>' +
+      '<circle cx="50" cy="55" r="13.5" fill="url(#ck-kg)" stroke="#6b5a3d" stroke-width="2"/>' +
+      '<path d="M35.5 42 c-1.2-9-2-16-2-22.5 l11.5 9.5 L50 15 l5 14 11.5-9.5 c0 6.5-.8 13.5-2 22.5 z" ' +
+      'fill="#d8ad52" stroke="#7d5f22" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M35.5 42 c9.5 3 19.5 3 29 0" fill="none" stroke="#7d5f22" stroke-width="2.6"/>' +
+      '<circle cx="50" cy="13" r="2.7" fill="#f0dc9e" stroke="#7d5f22" stroke-width="1.2"/>' +
+      '<path d="M40.5 47.5 a13.5 13.5 0 0 1 4.5-10" fill="none" stroke="#fffaf0" stroke-width="2.2" opacity=".6"/>' +
+      '<circle cx="45" cy="55" r="1.9" fill="#5c4a30" stroke="none"/>' +
+      '<circle cx="55.5" cy="55" r="1.9" fill="#5c4a30" stroke="none"/>' +
+      '<path d="M46 61.5 c2.2 1.8 6 1.8 8.2 0" fill="none" stroke="#5c4a30" stroke-width="1.5" stroke-linecap="round"/>' +
       '</svg>',
 
     queen:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
-      '<defs><linearGradient id="qg" x1="0" y1="0" x2="1" y2="1">' +
-      '<stop offset="0" stop-color="#f6e6f2"/><stop offset="1" stop-color="#c1a2bd"/></linearGradient></defs>' +
-      '<path d="M31 118 h38 l-4-11 H35 z" fill="#ab90a8" stroke="#5f4a5e" stroke-width="2"/>' +
-      '<path d="M36 107 c-4-18 5-24 5-37 h18 c0 13 9 19 5 37 z" fill="url(#qg)" stroke="#5f4a5e" stroke-width="2"/>' +
-      '<ellipse cx="50" cy="72" rx="11" ry="4" fill="#e8d6e4" stroke="#5f4a5e" stroke-width="1.8"/>' +
-      '<circle cx="50" cy="60" r="11" fill="url(#qg)" stroke="#5f4a5e" stroke-width="2"/>' +
-      '<path d="M38 48 l2-19 6 8 4-11 4 11 6-8 2 19 z" fill="#d8ad52" stroke="#7d5f22" stroke-width="1.9"/>' +
-      '<circle cx="50" cy="24" r="3" fill="#e8d6e4" stroke="#7d5f22" stroke-width="1.6"/>' +
-      '<circle cx="46" cy="59" r="1.7" fill="#584252" stroke="none"/>' +
-      '<circle cx="55" cy="59" r="1.7" fill="#584252" stroke="none"/>' +
+      '<defs><linearGradient id="ck-qg" x1=".18" y1="0" x2=".86" y2="1">' +
+      '<stop offset="0" stop-color="#fcf0f9"/><stop offset=".52" stop-color="#e2cbdd"/>' +
+      '<stop offset="1" stop-color="#b596b1"/></linearGradient></defs>' +
+      '<ellipse cx="50" cy="115" rx="21" ry="5" fill="#a68ba3" stroke="#5f4a5e" stroke-width="1.7"/>' +
+      '<path d="M50 71 c-9 0-13.5 7.5-15 19.5 -1 9-2.4 16.5-4.5 24.5 h39 c-2.1-8-3.5-15.5-4.5-24.5 -1.5-12-6-19.5-15-19.5 z" ' +
+      'fill="url(#ck-qg)" stroke="#5f4a5e" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M38 81 c7.5 4.5 16.5 4.5 24 0" fill="none" stroke="#5f4a5e" stroke-width="1.6" opacity=".75"/>' +
+      '<path d="M39.5 88 c-1.6 9.5-2.8 17.5-4.2 26" fill="none" stroke="#fff4fc" stroke-width="2.2" opacity=".45"/>' +
+      '<circle cx="50" cy="60" r="11.5" fill="url(#ck-qg)" stroke="#5f4a5e" stroke-width="2"/>' +
+      '<path d="M39 48.5 c-.8-7.5-1.4-13.5-1.4-18.5 l7 7 L50 25 l5.4 12 7-7 c0 5-.6 11-1.4 18.5 z" ' +
+      'fill="#d8ad52" stroke="#7d5f22" stroke-width="1.9" stroke-linejoin="round"/>' +
+      '<path d="M39 48.5 c7.5 2.6 15.5 2.6 22 0" fill="none" stroke="#7d5f22" stroke-width="2.3"/>' +
+      '<circle cx="50" cy="22.5" r="3" fill="#f6ecf4" stroke="#7d5f22" stroke-width="1.5"/>' +
+      '<path d="M41.5 53.5 a11.5 11.5 0 0 1 4-8.5" fill="none" stroke="#fff4fc" stroke-width="2" opacity=".6"/>' +
+      '<circle cx="46" cy="60" r="1.7" fill="#584252" stroke="none"/>' +
+      '<circle cx="55" cy="60" r="1.7" fill="#584252" stroke="none"/>' +
+      '<path d="M46.6 66 c2 1.6 5.2 1.6 7.2 0" fill="none" stroke="#584252" stroke-width="1.4" stroke-linecap="round"/>' +
       '</svg>',
 
     barrel:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
-      '<path d="M30 116 c-8-22-8-40 0-62 h40 c8 22 8 40 0 62 z" fill="#9a6c3d" stroke="#4a3018" stroke-width="2.4"/>' +
-      '<path d="M27 96 h46 M27 74 h46" stroke="#5c4526" stroke-width="4" fill="none"/>' +
-      '<path d="M42 55 v61 M58 55 v61" stroke="#7d5730" stroke-width="1.6" fill="none" opacity=".8"/>' +
-      '<ellipse cx="50" cy="55" rx="20" ry="6" fill="#b9884f" stroke="#4a3018" stroke-width="2.2"/>' +
+      '<defs><linearGradient id="ck-bg" x1="0" y1="0" x2="1" y2="0">' +
+      '<stop offset="0" stop-color="#c08d52"/><stop offset=".42" stop-color="#a3743f"/>' +
+      '<stop offset="1" stop-color="#7d5730"/></linearGradient></defs>' +
+      '<path d="M50 54 c-11 0-18 2-20 4 -4 18-4 36 0 56 2 2 9 4 20 4 s18-2 20-4 c4-20 4-38 0-56 -2-2-9-4-20-4 z" ' +
+      'fill="url(#ck-bg)" stroke="#4a3018" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M37 60 c-3.5 18-3.5 36 0 54" fill="none" stroke="#d8ab6e" stroke-width="3" opacity=".5"/>' +
+      '<path d="M28.6 74 c14 3 28.8 3 42.8 0 M28.6 96 c14 3 28.8 3 42.8 0" fill="none" stroke="#5c4526" stroke-width="4"/>' +
+      '<path d="M43 57 c-1.4 20-1.4 40 0 60 M57 57 c1.4 20 1.4 40 0 60" fill="none" stroke="#7d5730" stroke-width="1.5" opacity=".7"/>' +
+      '<ellipse cx="50" cy="55" rx="20" ry="6.5" fill="#cb9a58" stroke="#4a3018" stroke-width="2.2"/>' +
       '</svg>',
 
     stone:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
-      '<path d="M24 114 l-4-34 14-26 h32 l14 26 -4 34 z" fill="#8d8a81" stroke="#3f3d38" stroke-width="2.4"/>' +
-      '<path d="M34 54 l-8 26 h48 l-8-26 z" fill="#a5a199" stroke="#3f3d38" stroke-width="2"/>' +
-      '<path d="M26 96 h48" stroke="#5f5c55" stroke-width="2" opacity=".7"/>' +
-      '<path d="M44 80 v34 M60 80 v34" stroke="#5f5c55" stroke-width="1.6" opacity=".55"/>' +
+      '<defs><linearGradient id="ck-sg" x1=".2" y1="0" x2=".85" y2="1">' +
+      '<stop offset="0" stop-color="#b3afa6"/><stop offset=".55" stop-color="#928e85"/>' +
+      '<stop offset="1" stop-color="#6f6c65"/></linearGradient></defs>' +
+      '<path d="M33 52 h34 c5 0 9 4 10 10 l3 40 c.4 6-3 10-9 10 H29 c-6 0-9.4-4-9-10 l3-40 c.4-6 5-10 10-10 z" ' +
+      'fill="url(#ck-sg)" stroke="#3f3d38" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M33 52 c-4 6-6 12-6 18 h46 c0-6-2-12-6-18" fill="#b8b4ab" stroke="#3f3d38" stroke-width="2"/>' +
+      '<path d="M31 56 c-3 5-4.6 10-4.6 15" fill="none" stroke="#d5d1c8" stroke-width="2.4" opacity=".55"/>' +
+      '<path d="M22.4 92 c18 2.4 37.2 2.4 55.2 0" fill="none" stroke="#5f5c55" stroke-width="2" opacity=".65"/>' +
+      '<path d="M44 71 v41 M61 71 v41" fill="none" stroke="#5f5c55" stroke-width="1.5" opacity=".5"/>' +
       '</svg>',
 
     iron:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
-      '<path d="M20 116 h60 l-6-52 H26 z" fill="#3f4450" stroke="#171a20" stroke-width="2.6"/>' +
-      '<path d="M26 64 h48 l-3-8 H29 z" fill="#5a6070" stroke="#171a20" stroke-width="2"/>' +
-      '<path d="M38 56 c0-16 24-16 24 0" fill="none" stroke="#20242c" stroke-width="6"/>' +
-      '<path d="M38 56 c0-16 24-16 24 0" fill="none" stroke="#727a8c" stroke-width="2.4"/>' +
-      '<path d="M32 108 h36" stroke="#20242c" stroke-width="3" opacity=".8"/>' +
-      '<text x="50" y="98" font-size="26" font-family="Georgia,serif" fill="#8b93a5" stroke="none" text-anchor="middle">IV</text>' +
+      '<defs><linearGradient id="ck-ig" x1=".2" y1="0" x2=".85" y2="1">' +
+      '<stop offset="0" stop-color="#5b6272"/><stop offset=".5" stop-color="#434958"/>' +
+      '<stop offset="1" stop-color="#2b303b"/></linearGradient></defs>' +
+      '<path d="M38 58 c0-15 24-15 24 0" fill="none" stroke="#191d24" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="M38 58 c0-15 24-15 24 0" fill="none" stroke="#7d8598" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M27 62 h46 c3 0 5 2 5.4 5 l3.6 44 c.3 4-2 7-6 7 H24 c-4 0-6.3-3-6-7 l3.6-44 c.4-3 2.4-5 5.4-5 z" ' +
+      'fill="url(#ck-ig)" stroke="#171a20" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<path d="M22 74 c18.6 2.6 37.4 2.6 56 0" fill="none" stroke="#5f6779" stroke-width="2.4" opacity=".6"/>' +
+      '<path d="M27 68 l-3.4 46" fill="none" stroke="#828b9e" stroke-width="2.6" opacity=".55"/>' +
+      '<circle cx="27" cy="108" r="2.2" fill="#20242c" stroke="none"/>' +
+      '<circle cx="73" cy="108" r="2.2" fill="#20242c" stroke="none"/>' +
+      '<text x="50" y="102" font-size="26" font-family="Georgia,serif" fill="#98a0b2" stroke="none" text-anchor="middle">IV</text>' +
       '</svg>',
 
     marble:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
-      '<defs><radialGradient id="mg" cx=".36" cy=".3" r=".8">' +
-      '<stop offset="0" stop-color="#f4fbff"/><stop offset=".45" stop-color="#8fc2dd"/>' +
-      '<stop offset="1" stop-color="#3d6c8c"/></radialGradient></defs>' +
-      '<circle cx="50" cy="84" r="30" fill="url(#mg)" stroke="#22485f" stroke-width="2.4"/>' +
-      '<ellipse cx="39" cy="72" rx="9" ry="6" fill="#ffffff" stroke="none" opacity=".8" transform="rotate(-28 39 72)"/>' +
+      '<defs><radialGradient id="ck-mg" cx=".34" cy=".28" r=".85">' +
+      '<stop offset="0" stop-color="#fbfeff"/><stop offset=".38" stop-color="#a6d2e9"/>' +
+      '<stop offset=".82" stop-color="#4c7d9c"/><stop offset="1" stop-color="#2c5573"/></radialGradient></defs>' +
+      '<circle cx="50" cy="84" r="30" fill="url(#ck-mg)" stroke="#22485f" stroke-width="2.4"/>' +
+      '<path d="M23 92 a30 30 0 0 0 52 12" fill="none" stroke="#cfeafa" stroke-width="2.6" opacity=".4"/>' +
+      '<ellipse cx="39" cy="71" rx="9.5" ry="6" fill="#ffffff" stroke="none" opacity=".9" transform="rotate(-28 39 71)"/>' +
+      '<circle cx="62" cy="96" r="3.4" fill="#ffffff" stroke="none" opacity=".35"/>' +
       '</svg>',
 
     statue:
       '<svg viewBox="0 0 100 120" aria-hidden="true">' +
-      '<path d="M22 118 h56 l-6-12 H28 z" fill="#2f3239" stroke="#14161a" stroke-width="2.4"/>' +
-      '<path d="M32 106 l4-52 h28 l4 52 z" fill="#454a53" stroke="#14161a" stroke-width="2.4"/>' +
-      '<circle cx="50" cy="42" r="12" fill="#525863" stroke="#14161a" stroke-width="2.4"/>' +
-      '<path d="M38 30 h24" stroke="#14161a" stroke-width="2.4"/>' +
-      '<path d="M40 66 h20 M40 80 h20" stroke="#2a2d33" stroke-width="2" opacity=".9"/>' +
+      '<defs><linearGradient id="ck-tg" x1=".2" y1="0" x2=".85" y2="1">' +
+      '<stop offset="0" stop-color="#5b616d"/><stop offset=".55" stop-color="#454a54"/>' +
+      '<stop offset="1" stop-color="#2c3038"/></linearGradient></defs>' +
+      '<path d="M20 118 h60 c1.6 0 2-1 1.4-2.4 l-4-9.6 H22.6 l-4 9.6 C18 117 18.4 118 20 118 z" ' +
+      'fill="#2b2e35" stroke="#14161a" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M50 55 c-9 0-13 6-14 16 l-4 35 h36 l-4-35 c-1-10-5-16-14-16 z" ' +
+      'fill="url(#ck-tg)" stroke="#14161a" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M37.5 73 c-1.6 11-2.8 22-3.6 32" fill="none" stroke="#79818f" stroke-width="2.4" opacity=".6"/>' +
+      '<circle cx="50" cy="42" r="12" fill="url(#ck-tg)" stroke="#14161a" stroke-width="2.4"/>' +
+      '<path d="M41.5 35.5 a12 12 0 0 1 4-8" fill="none" stroke="#828a98" stroke-width="2.2" opacity=".65"/>' +
+      '<path d="M38.5 30.5 c7.5-3 15.5-3 23 0" fill="none" stroke="#14161a" stroke-width="2.4"/>' +
+      '<path d="M38 74 c8 2 16 2 24 0 M36.6 88 c9 2 18 2 27 0" fill="none" stroke="#252931" stroke-width="2" opacity=".9"/>' +
       '</svg>'
   };
+
+  /* ---- token: medallions. Shape carries the meaning, not only colour ----
+   * royals are round, freight is round, the immovable statue is the only
+   * square one — so it is still identifiable in greyscale. */
+
+  ART_SETS.token = {
+    king:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<circle cx="50" cy="70" r="34" fill="#f0e3c4" stroke="#8a6f34" stroke-width="5"/>' +
+      '<circle cx="50" cy="70" r="26" fill="none" stroke="#d0a84f" stroke-width="2.4" opacity=".9"/>' +
+      '<path d="M35 82 l-4-25 11 8 8-15 8 15 11-8 -4 25 z" fill="#c69a3f" stroke="#6b501a" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<path d="M31 60 a34 34 0 0 1 16-18" stroke="#fffaee" stroke-width="4" opacity=".7" fill="none" stroke-linecap="round"/>' +
+      '<path d="M32 112 h36 v-6 H32 z" fill="#a8946e" stroke="#6b5a3d" stroke-width="2.2"/>' +
+      '</svg>',
+
+    queen:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<circle cx="50" cy="72" r="30" fill="#f0dced" stroke="#8a5f80" stroke-width="5"/>' +
+      '<circle cx="50" cy="72" r="22" fill="none" stroke="#c48fb8" stroke-width="2.4" opacity=".9"/>' +
+      '<path d="M38 82 l-3-21 8 7 7-13 7 13 8-7 -3 21 z" fill="#c69a3f" stroke="#6b501a" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<circle cx="50" cy="55" r="2.6" fill="#c69a3f" stroke="none"/>' +
+      '<path d="M33 64 a30 30 0 0 1 14-16" stroke="#fff6fd" stroke-width="3.6" opacity=".7" fill="none" stroke-linecap="round"/>' +
+      '<path d="M34 112 h32 v-6 H34 z" fill="#9c839a" stroke="#5f4a5e" stroke-width="2.2"/>' +
+      '</svg>',
+
+    barrel:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<circle cx="50" cy="78" r="26" fill="#c08e52" stroke="#4a3018" stroke-width="4.5"/>' +
+      '<path d="M28 68 h44 M28 88 h44" stroke="#4a3018" stroke-width="3.4" opacity=".85" fill="none"/>' +
+      '<path d="M50 52 v52" stroke="#4a3018" stroke-width="2.4" opacity=".55" fill="none"/>' +
+      '<path d="M32 70 a26 26 0 0 1 12-14" stroke="#eec894" stroke-width="3.4" opacity=".7" fill="none" stroke-linecap="round"/>' +
+      '</svg>',
+
+    stone:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<circle cx="50" cy="74" r="30" fill="#a5a199" stroke="#3f3d38" stroke-width="4.5"/>' +
+      '<path d="M38 62 h24 v24 h-24 z" fill="#c0bcb2" stroke="#3f3d38" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M38 74 h24 M50 62 v24" stroke="#3f3d38" stroke-width="2.2" opacity=".7" fill="none"/>' +
+      '<path d="M32 66 a30 30 0 0 1 14-17" stroke="#dedad0" stroke-width="3.6" opacity=".6" fill="none" stroke-linecap="round"/>' +
+      '</svg>',
+
+    iron:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<circle cx="50" cy="70" r="34" fill="#3f4450" stroke="#12151a" stroke-width="5"/>' +
+      '<circle cx="50" cy="70" r="26" fill="none" stroke="#727a8c" stroke-width="2.4" opacity=".8"/>' +
+      '<text x="50" y="82" font-size="30" font-family="Georgia,serif" fill="#aab2c4" ' +
+      'stroke="none" text-anchor="middle">IV</text>' +
+      '<path d="M30 58 a34 34 0 0 1 16-18" stroke="#8b93a5" stroke-width="4" opacity=".7" fill="none" stroke-linecap="round"/>' +
+      '</svg>',
+
+    marble:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<defs><radialGradient id="tk-mg" cx=".36" cy=".3" r=".82">' +
+      '<stop offset="0" stop-color="#f8fdff"/><stop offset=".45" stop-color="#96c8e2"/>' +
+      '<stop offset="1" stop-color="#33607f"/></radialGradient></defs>' +
+      '<circle cx="50" cy="80" r="26" fill="url(#tk-mg)" stroke="#22485f" stroke-width="4.5"/>' +
+      '<ellipse cx="41" cy="70" rx="7" ry="5" fill="#fff" stroke="none" opacity=".85" transform="rotate(-28 41 70)"/>' +
+      '</svg>',
+
+    statue:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<path d="M20 40 h60 v60 h-60 z" fill="#3a3f49" stroke="#0f1114" stroke-width="5" stroke-linejoin="round"/>' +
+      '<path d="M40 92 l3-38 h14 l3 38 z" fill="#565c68" stroke="#0f1114" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M32 100 h36" stroke="#0f1114" stroke-width="4" fill="none"/>' +
+      '<path d="M26 46 h20" stroke="#767e8c" stroke-width="3.4" opacity=".7" fill="none" stroke-linecap="round"/>' +
+      '</svg>'
+  };
+
+  var PIECE_SETS = ['carved', 'token'];
+  var ART = ART_SETS.carved;
 
   var ARROW_ART =
     '<svg class="ledge" viewBox="0 0 40 40" aria-hidden="true">' +
@@ -126,7 +251,26 @@
     this.pieceEls = {};
     this.level = null;
     this.pivot = null;
+    this.set = 'carved';
   }
+
+  Renderer.prototype.artFor = function (p) {
+    var set = ART_SETS[this.set] || ART_SETS.carved;
+    return set[p.type] || set.stone || ART_SETS.carved.stone;
+  };
+
+  /* Swap the carving. Only the figure is redrawn — position, selection, pips
+   * and the stack badge all belong to the piece element around it. */
+  Renderer.prototype.setPieceSet = function (name) {
+    if (!ART_SETS[name] || name === this.set) return;
+    this.set = name;
+    var self = this;
+    Object.keys(this.pieceEls).forEach(function (id) {
+      var el = self.pieceEls[id];
+      var fig = el.querySelector('.p-fig');
+      if (fig) fig.innerHTML = ART_SETS[name][el.dataset.type] || ART_SETS[name].stone;
+    });
+  };
 
   Renderer.prototype.mount = function (level) {
     this.level = level;
@@ -142,6 +286,10 @@
         el.className = 'cell ' + cell.t + (isExit ? ' exit' : '');
         el.style.left = 'calc(' + c + ' * var(--tile))';
         el.style.top = 'calc(' + r + ' * var(--tile))';
+        /* also as custom properties: the board-wide grain needs to know where
+           on the slab this tile sits so the texture lines up across tiles */
+        el.style.setProperty('--col', c);
+        el.style.setProperty('--row', r);
         el.dataset.col = c;
         el.dataset.row = r;
 
@@ -256,6 +404,7 @@
       var el = document.createElement('div');
       el.className = 'piece piece-' + p.type + (E.movableP(p) ? '' : ' fixed');
       el.dataset.id = p.id;
+      el.dataset.type = p.type;
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', E.movableP(p) ? '0' : '-1');
       el.setAttribute('aria-label',
@@ -268,7 +417,7 @@
       el.innerHTML =
         '<div class="p-shadow"></div>' +
         '<div class="p-ring"></div>' +
-        '<div class="p-fig">' + (ART[p.type] || ART.stone) + '</div>' +
+        '<div class="p-fig">' + self.artFor(p) + '</div>' +
         '<div class="p-pips">' + pips + '</div>' +
         '<div class="hit"></div>';
 
@@ -354,6 +503,10 @@
     var deg = clamped * MAX_TILT;
     if (Math.abs(ratio) > 1) deg = (ratio > 0 ? 1 : -1) * OVER_TILT;
     this.rig.style.setProperty('--tilt', deg.toFixed(2) + 'deg');
+    /* the lean, signed and unsigned, for anything that has to shift with the
+       light rather than rotate with the frame: cast shadows, contact shadows */
+    this.scene.style.setProperty('--lean', clamped.toFixed(3));
+    this.scene.style.setProperty('--lean-abs', Math.abs(clamped).toFixed(3));
     if (instant) {
       var was = this.rig.style.transition;
       this.rig.style.transition = 'none';
@@ -392,9 +545,12 @@
     });
     if (!moves) return;
 
-    moves.forEach(function (m) {
+    moves.forEach(function (m, i) {
       var cell = self.cellAt(m.col, m.row);
       cell.classList.add('target');
+      /* the options bloom outward in the order the engine listed them, which
+         is a beat of life for something that would otherwise all appear at once */
+      cell.style.setProperty('--i', i);
       if (m.pushes && m.pushes.length) cell.classList.add('shove');
       if (m.breaks) cell.classList.add('crumbles');
       if (Math.abs(m.ratio) >= 0.88) cell.classList.add('risky');
@@ -452,6 +608,8 @@
   root.CK.render = {
     Renderer: Renderer,
     ART: ART,
+    ART_SETS: ART_SETS,
+    PIECE_SETS: PIECE_SETS,
     CROWN_ART: CROWN_ART,
     HEART_ART: HEART_ART,
     MAX_TILT: MAX_TILT

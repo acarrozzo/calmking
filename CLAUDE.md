@@ -267,12 +267,36 @@ Progress is stored in `localStorage` under `calmking.v1`:
 ```text
 { v: 1, unlocked: <highest level reached>, best: { <levelId>: { moves, time, crowns } },
   learned: { <concept>: true },
-  opts: { sound, volume, motion, shake, contrast, speed, pad, unlockAll } }
+  opts: { sound, volume, motion, shake, contrast, speed, pad, unlockAll,
+          pieces, board } }
 ```
 
 `loadStore` accepts a save only when `raw.v === 1` and otherwise starts a new game, so **bumping the version silently wipes every player's progress**. Prefer additive, backward-compatible fields, which the existing defaults merge already. If a version bump is genuinely needed, write a migration from the old shape first.
 
 The “unlock every level” playtest option is a view over progression (`opts.unlockAll`), not a write to it. Keep it that way: it must not overwrite genuine progression or crown records.
+
+## Skins
+
+Two independent, purely cosmetic choices. Neither may ever reach the engine: a skin must not change a rule, a move, or a solver key.
+
+`opts.pieces` picks a carving from `ART_SETS` in `js/render.js` — `carved` (standing storybook figures) and `token` (medallions). Every set defines all seven piece types on the same 100x120 box, standing on the same baseline. `Renderer.setPieceSet` swaps only the figure inside `.p-fig`, so selection, pips and stack badges survive.
+
+Three rules the art has to follow:
+
+- **Say `stroke` on every shape.** The stylesheet gives every `svg` a `currentColor` stroke, so a fill-only `<circle>` picks up a cream outline unless it says `stroke="none"` or sits inside a `<g>` that sets one.
+- **Prefix gradient ids per set** (`ck-`, `tk-`). They are global to the document, and the board holds one copy of the art per piece, so unprefixed ids let sets steal each other's fills.
+- **Weight must read as bulk or shape**, never as colour, and the immovable statue needs a cue that survives greyscale — in `token` it is the only square medallion.
+
+An unrecognised saved value falls back to the first entry in the list rather than leaving the board unstyled, so retiring a set does not strand anyone who had it selected.
+
+`opts.board` picks a theme from the `.app.board-*` rules in `css/style.css` — `parchment`, `slate`, `marquetry`, `marble`, `ink`. A theme is only a set of custom properties (`--floor-a`, `--wall-a`, `--etch`, `--frame`, …). Tiles are drawn from those variables, so a new theme should not need a new selector.
+
+Two traps worth knowing:
+
+- **`--floor-bg` must be declared on `.app`, not `:root`.** A custom property resolves the `var()`s inside it against the element it is *declared* on. On `:root` it would bake in the parchment defaults and no `.app.board-*` class could ever override it.
+- **Board-wide grain goes in `--floor-tex`,** which `.cell-top::before` positions by the tile's `--col`/`--row`. Putting a vein in `--floor-bg` restarts it in every tile and reads as scratches.
+
+Both settings live in Options and nowhere else. The playtest scaffolding that once sat on the board — a floating cycler and `?pieces=`/`?board=` URL parameters — has been removed.
 
 ## Before finishing
 

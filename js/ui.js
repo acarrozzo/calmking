@@ -5,16 +5,6 @@
   var E = root.CK.engine, R = root.CK.render, A = root.CK.audio;
   var LEVELS = root.CK.LEVELS.map(E.buildLevel);
   var STORE_KEY = 'calmking.v1';
-  var ROMAN_PARTS = [[100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'],
-                     [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
-  function roman(n) {
-    if (!(n > 0)) return String(n);
-    var out = '';
-    for (var i = 0; i < ROMAN_PARTS.length; i++) {
-      while (n >= ROMAN_PARTS[i][0]) { out += ROMAN_PARTS[i][1]; n -= ROMAN_PARTS[i][0]; }
-    }
-    return out;
-  }
 
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
@@ -31,8 +21,31 @@
 
   /* ---------------------------------------------------------- persistence */
 
+  /* The two skins. Keys are the CSS class suffix and the render.js art set
+     name, so nothing has to translate between them. */
+  var PIECE_SETS = [
+    { key: 'carved', name: 'Carved' },
+    { key: 'token',  name: 'Token' }
+  ];
+  var BOARD_THEMES = [
+    { key: 'parchment', name: 'Parchment' },
+    { key: 'slate',     name: 'Slate' },
+    { key: 'marquetry', name: 'Marquetry' },
+    { key: 'marble',    name: 'Marble' },
+    { key: 'ink',       name: 'Ink' }
+  ];
+
+  /* A saved skin that no longer exists falls back to the first one rather
+     than leaving the board unstyled — retiring a set must not strand anyone
+     who had it selected. */
+  function optionKey(list, key) {
+    for (var i = 0; i < list.length; i++) if (list[i].key === key) return key;
+    return list[0].key;
+  }
+
   var DEFAULT_OPTS = { sound: true, volume: 0.7, motion: true, shake: true,
-                       contrast: false, speed: 1, pad: null, unlockAll: false };
+                       contrast: false, speed: 1, pad: null, unlockAll: false,
+                       pieces: 'carved', board: 'parchment' };
   var store = loadStore();
 
   function loadStore() {
@@ -73,6 +86,26 @@
     var pad = padVisible();
     el.pad.hidden = !pad;
     el.app.classList.toggle('has-pad', pad);
+
+    applySkins();
+  }
+
+  /* The board theme is pure CSS; the piece set is the renderer's carving.
+     Both are named on .app so the two stay in step. */
+  function applySkins() {
+    var pieces = optionKey(PIECE_SETS, store.opts.pieces);
+    var board = optionKey(BOARD_THEMES, store.opts.board);
+
+    PIECE_SETS.forEach(function (s) { el.app.classList.toggle('pieces-' + s.key, s.key === pieces); });
+    BOARD_THEMES.forEach(function (s) { el.app.classList.toggle('board-' + s.key, s.key === board); });
+    renderer.setPieceSet(pieces);
+  }
+
+  function setSkin(which, key) {
+    store.opts[which] = key;
+    applySkins();
+    saveStore();
+    if (!el.ovOptions.hidden) buildOptions();
   }
 
   /* Playtest switch: opens the whole map without touching recorded progress. */
@@ -197,7 +230,7 @@
     renderer.setTilt(ratio, true);
     updateMeter(ratio, E.zoneOf(ratio).key);
 
-    el.hudNum.textContent = 'Level ' + roman(g.level.id);
+    el.hudNum.textContent = 'Level ' + g.level.id;
     el.hudName.textContent = g.level.title;
     el.statMoves.textContent = '0';
     el.statTime.textContent = fmtTime(g.elapsed);
@@ -750,7 +783,7 @@
     b.className = 'lvl';
     b.disabled = locked;
     b.innerHTML =
-      '<span class="lvl-n">Level ' + roman(lv.id) + '</span>' +
+      '<span class="lvl-n">Level ' + lv.id + '</span>' +
       '<span class="lvl-t">' + (locked ? '· · ·' : escapeHtml(lv.title)) + '</span>' +
       '<span class="lvl-c">' +
         (locked ? '<span class="lvl-lock">Locked</span>' : crownRow(best ? best.crowns : 0)) +
@@ -782,6 +815,8 @@
   /* -------------------------------------------------------------- options */
 
   var OPTIONS = [
+    { key: 'pieces', type: 'choice', label: 'Pieces', note: 'How the court is carved.', list: PIECE_SETS },
+    { key: 'board', type: 'choice', label: 'Board', note: 'What the maze is built from.', list: BOARD_THEMES },
     { key: 'sound', type: 'switch', label: 'Sound', note: 'Wood, stone and brass.' },
     { key: 'volume', type: 'range', label: 'Volume', note: '', min: 0, max: 1, step: 0.05 },
     { key: 'motion', type: 'switch', label: 'Animation', note: 'Off snaps pieces straight into place.' },
@@ -806,7 +841,29 @@
       left.innerHTML = '<b>' + o.label + '</b>' + (o.note ? '<span>' + o.note + '</span>' : '');
       row.appendChild(left);
 
-      if (o.type === 'pad') {
+      if (o.type === 'choice') {
+        row.classList.add('opt-wide');
+        var seg = document.createElement('div');
+        seg.className = 'seg';
+        seg.setAttribute('role', 'radiogroup');
+        seg.setAttribute('aria-label', o.label);
+        var live = optionKey(o.list, store.opts[o.key]);
+        o.list.forEach(function (choice) {
+          var b = document.createElement('button');
+          b.className = 'seg-b';
+          b.type = 'button';
+          b.textContent = choice.name;
+          b.setAttribute('role', 'radio');
+          b.setAttribute('aria-checked', String(choice.key === live));
+          b.addEventListener('click', function () {
+            if (store.opts[o.key] === choice.key) return;
+            setSkin(o.key, choice.key);
+            A.play('select');
+          });
+          seg.appendChild(b);
+        });
+        row.appendChild(seg);
+      } else if (o.type === 'pad') {
         var ps = document.createElement('button');
         ps.className = 'switch';
         ps.setAttribute('role', 'switch');

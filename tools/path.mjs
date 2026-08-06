@@ -41,6 +41,7 @@ function show(label) {
       else if (cell.t === 'slick') line += '~';
       else if (cell.t === 'fragile') line += 'x';
       else if (cell.t === 'plate') line += String(cell.need);
+      else if (cell.t === 'pin') line += 'A';
       else if (cell.t === 'door') line += E.doorsOpen(level, state.pieces) ? ':' : 'd';
       else if (cell.t === 'oneway') line += { '1,0': '>', '-1,0': '<', '0,-1': '^', '0,1': 'v' }[cell.dc + ',' + cell.dr];
       else line += '.';

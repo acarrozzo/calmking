@@ -66,6 +66,13 @@ for (const def of DEFS) {
     continue;
   }
 
+  /* Three crowns must be the solver-proven optimum, never a guess. */
+  if (def.par?.three !== res.moves) {
+    console.log(`L${def.id} ${def.title}: par.three is ${def.par?.three ?? 'missing'}, ` +
+                `optimum is ${res.moves}`);
+    bad++;
+  }
+
   /* Can the royals simply walk it alone? If so the level teaches nothing. */
   const royalIds = new Set(
     level.pieces.filter((p) => E.isRoyal(p)).map((p) => p.id)

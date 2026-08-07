@@ -9,14 +9,14 @@
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
   ['app', 'board', 'rig', 'scene', 'stage', 'hud-num', 'hud-name', 'meter', 'meter-needle',
-   'meter-label', 'stat-moves', 'stat-time', 'btn-undo', 'btn-restart', 'btn-levels',
+   'meter-label', 'stat-moves', 'stat-time', 'btn-levels',
    'teach', 'toast', 'ov-win', 'ov-fail', 'ov-levels', 'ov-options', 'ov-title',
    'win-crowns', 'win-title', 'win-moves', 'win-time', 'win-best', 'win-note',
    'win-replay', 'win-select', 'win-next', 'fail-title', 'fail-note', 'fail-undo',
-   'fail-retry', 'level-grid', 'levels-close', 'btn-options', 'options', 'options-close',
+   'fail-retry', 'level-grid', 'levels-close', 'btn-settings', 'options', 'options-close',
    'btn-wipe', 'total-crowns', 'title-play', 'title-levels',
    'btn-help', 'ov-help', 'help-close', 'title-help',
-   'pad', 'pad-next', 'pad-undo'
+   'pad', 'pad-dir', 'pad-prev', 'pad-next', 'pad-undo', 'pad-restart'
   ].forEach(function (id) { el[id.replace(/-(\w)/g, function (m, c) { return c.toUpperCase(); })] = $(id); });
 
   /* ---------------------------------------------------------- persistence */
@@ -83,8 +83,11 @@
     A.setEnabled(o.sound);
     A.setVolume(o.volume);
 
+    /* Only the direction half is optional. The action column carries undo and
+       restart, so it stays whatever the setting says. */
     var pad = padVisible();
-    el.pad.hidden = !pad;
+    el.padDir.hidden = !pad;
+    el.pad.classList.toggle('no-dir', !pad);
     el.app.classList.toggle('has-pad', pad);
 
     applySkins();
@@ -234,7 +237,6 @@
     el.hudName.textContent = g.level.title;
     el.statMoves.textContent = '0';
     el.statTime.textContent = fmtTime(g.elapsed);
-    el.btnUndo.disabled = true;
     el.padUndo.disabled = true;
 
     refreshTeach();
@@ -278,9 +280,29 @@
     };
   }
 
+  /* ------------------------------------------------------------ pad echo */
+
+  /* Every input path funnels through tryMove, cycle, undo and restartLevel,
+     so lighting the pad from inside them echoes the action however it was
+     asked for — key, tile click, drag or the button itself. */
+  var FLASH_MS = 170;
+
+  function flash(node) {
+    if (!node || node.disabled) return;
+    node.classList.remove('lit');
+    void node.offsetWidth;              /* restart the fade on a fast repeat */
+    node.classList.add('lit');
+    clearTimeout(node.ckFlash);
+    node.ckFlash = setTimeout(function () { node.classList.remove('lit'); }, FLASH_MS);
+  }
+
+  /* Filled in beside the direction listeners below. */
+  var DIR_BTN = {};
+
   /* Pressing on during a slide used to drop the keystroke on the floor. Snap
      the animation to its end instead, so a quick player never loses a move. */
   function tryMove(id, dc, dr) {
+    flash(DIR_BTN[dc + ',' + dr]);
     if (g.busy) skipAnimation();
     if (g.busy || g.gs.status !== 'play') return;
     var res = E.step(g.level, g.gs, id, dc, dr);
@@ -292,7 +314,6 @@
     }
     g.history.push(snapshot());
     if (g.history.length > 300) g.history.shift();
-    el.btnUndo.disabled = false;
     el.padUndo.disabled = false;
 
     var moved = E.byId(g.gs.pieces, id);
@@ -516,6 +537,7 @@
   /* ---------------------------------------------------------------- undo */
 
   function undo() {
+    flash(el.padUndo);
     if (g.busy) skipAnimation();
     if (g.busy || !g.history.length) return;
     var snap = g.history.pop();
@@ -529,12 +551,18 @@
     updateMeter(ratio, E.zoneOf(ratio).key);
     g.lastZone = E.zoneOf(ratio).key;
     el.statMoves.textContent = String(g.gs.moves);
-    el.btnUndo.disabled = !g.history.length;
     el.padUndo.disabled = !g.history.length;
     A.play('select');
     if (!g.ticking) startClock();
     var keep = (g.lastMoved && E.byId(g.gs.pieces, g.lastMoved)) ? g.lastMoved : E.king(g.gs.pieces).id;
     select(keep, true);
+  }
+
+  /* Replaying the level the player is on, as opposed to loading another one,
+     which is what startLevel does everywhere else. */
+  function restartLevel() {
+    flash(el.padRestart);
+    startLevel(g.index);
   }
 
   /* --------------------------------------------------------------- input */
@@ -656,7 +684,7 @@
       return;
     }
     if (k.toLowerCase() === 'z') { ev.preventDefault(); undo(); }
-    else if (k.toLowerCase() === 'r') { ev.preventDefault(); startLevel(g.index); }
+    else if (k.toLowerCase() === 'r') { ev.preventDefault(); restartLevel(); }
     else if (k === 'Tab') { ev.preventDefault(); cycle(ev.shiftKey ? -1 : 1); }
   });
 
@@ -670,6 +698,7 @@
   }
 
   function cycle(dir) {
+    flash(dir < 0 ? el.padPrev : el.padNext);
     var movables = g.gs.pieces.filter(function (p) { return E.movableP(p); });
     if (!movables.length) return;
     var at = movables.findIndex(function (p) { return p.id === g.selected; });
@@ -693,25 +722,29 @@
   el.btnHelp.addEventListener('click', openHelp);
   el.helpClose.addEventListener('click', function () { closeSheet(el.ovHelp); });
 
-  Array.prototype.forEach.call(el.pad.querySelectorAll('.pad-btn'), function (b) {
+  Array.prototype.forEach.call(el.padDir.querySelectorAll('.pad-btn'), function (b) {
+    DIR_BTN[b.dataset.dc + ',' + b.dataset.dr] = b;
     b.addEventListener('click', function () {
       A.unlock();
       moveSelected(+b.dataset.dc, +b.dataset.dr);
     });
   });
-  el.padNext.addEventListener('click', function () {
-    A.unlock();
-    if (g.busy) skipAnimation();
-    if (g.gs && g.gs.status === 'play') cycle(1);
-  });
+  function padCycle(dir) {
+    return function () {
+      A.unlock();
+      if (g.busy) skipAnimation();
+      if (g.gs && g.gs.status === 'play') cycle(dir);
+    };
+  }
+  el.padPrev.addEventListener('click', padCycle(-1));
+  el.padNext.addEventListener('click', padCycle(1));
   el.padUndo.addEventListener('click', function () { A.unlock(); undo(); });
+  el.padRestart.addEventListener('click', function () { A.unlock(); restartLevel(); });
 
-  el.btnUndo.addEventListener('click', undo);
-  el.btnRestart.addEventListener('click', function () { A.unlock(); startLevel(g.index); });
   el.btnLevels.addEventListener('click', openLevels);
   el.failUndo.addEventListener('click', function () { undo(); });
-  el.failRetry.addEventListener('click', function () { startLevel(g.index); });
-  el.winReplay.addEventListener('click', function () { startLevel(g.index); });
+  el.failRetry.addEventListener('click', function () { restartLevel(); });
+  el.winReplay.addEventListener('click', function () { restartLevel(); });
   el.winSelect.addEventListener('click', openLevels);
   el.winNext.addEventListener('click', function () {
     if (g.index + 1 < LEVELS.length) startLevel(g.index + 1);
@@ -719,7 +752,7 @@
   });
   el.levelsClose.addEventListener('click', function () { closeSheet(el.ovLevels); });
   el.optionsClose.addEventListener('click', function () { closeSheet(el.ovOptions); });
-  el.btnOptions.addEventListener('click', openOptions);
+  el.btnSettings.addEventListener('click', openOptions);
   el.titlePlay.addEventListener('click', function () {
     A.unlock();
     el.ovTitle.hidden = true;
@@ -829,7 +862,7 @@
       note: 'Opens the whole map for playtesting. Your crowns and best scores are untouched.' }
   ];
 
-  function openOptions() { buildOptions(); show(el.ovOptions); }
+  function openOptions() { stopClock(); buildOptions(); show(el.ovOptions); }
 
   function buildOptions() {
     el.options.innerHTML = '';

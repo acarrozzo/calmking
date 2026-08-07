@@ -17,9 +17,6 @@
       <button class="icon-btn" id="btn-levels" title="Level select (Esc)" aria-label="Level select">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <button class="icon-btn" id="btn-help" title="How to play (H)" aria-label="How to play">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2 1-1.2 1.9v.3"/><circle cx="12" cy="17.5" r="1"/></svg>
-      </button>
       <div class="hud-title">
         <span class="hud-num" id="hud-num">1</span>
         <span class="hud-name" id="hud-name">The Quiet Gate</span>
@@ -41,11 +38,11 @@
     <div class="hud-right">
       <div class="stat"><span class="stat-k">Moves</span><span class="stat-v" id="stat-moves">0</span></div>
       <div class="stat"><span class="stat-k">Time</span><span class="stat-v" id="stat-time">0:00</span></div>
-      <button class="icon-btn" id="btn-undo" title="Undo (Z)" aria-label="Undo last move">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 0 12h-3"/></svg>
+      <button class="icon-btn" id="btn-help" title="How to play (H)" aria-label="How to play">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2 1-1.2 1.9v.3"/><circle cx="12" cy="17.5" r="1"/></svg>
       </button>
-      <button class="icon-btn" id="btn-restart" title="Restart (R)" aria-label="Restart level">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6"/><path d="M20 5v6h-6"/></svg>
+      <button class="icon-btn" id="btn-settings" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.5 13H3a2 2 0 1 1 0-4h.2A1.6 1.6 0 0 0 4.3 6.2l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 2.7-1.1V2a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.8 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.3a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.2 1.2z"/></svg>
       </button>
     </div>
   </header>
@@ -66,8 +63,30 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
-  <div class="pad" id="pad" hidden>
-    <div class="pad-dir">
+  <div class="pad" id="pad">
+    <div class="pad-acts pad-acts-aux">
+      <button class="pad-act" id="pad-undo" title="Undo (Z)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 0 12h-3"/></svg>
+        <span>Undo</span>
+      </button>
+      <button class="pad-act" id="pad-restart" title="Restart (R)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6"/><path d="M20 5v6h-6"/></svg>
+        <span>Restart</span>
+      </button>
+    </div>
+
+    <div class="pad-acts pad-acts-main">
+      <button class="pad-act" id="pad-prev" title="Previous piece (Shift+Tab)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 8.6L1.8 12l3.6 3.4"/><circle cx="9" cy="12" r="1.6" fill="currentColor" stroke="none" opacity=".5"/><circle cx="14.4" cy="12" r="1.6" fill="currentColor" stroke="none" opacity=".5"/><circle cx="20.6" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg>
+        <span>Prev piece</span>
+      </button>
+      <button class="pad-act" id="pad-next" title="Next piece (Tab)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="3.4" cy="12" r="2.4" fill="currentColor" stroke="none"/><circle cx="9.6" cy="12" r="1.6" fill="currentColor" stroke="none" opacity=".5"/><circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none" opacity=".5"/><path d="M18.6 8.6L22.2 12l-3.6 3.4"/></svg>
+        <span>Next piece</span>
+      </button>
+    </div>
+
+    <div class="pad-dir" id="pad-dir" hidden>
       <button class="pad-btn up" data-dc="0" data-dr="-1" aria-label="Move up">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
       </button>
@@ -79,17 +98,6 @@
       </button>
       <button class="pad-btn right" data-dc="1" data-dr="0" aria-label="Move right">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-    </div>
-
-    <div class="pad-acts">
-      <button class="pad-act" id="pad-next">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h13"/><path d="M13 7l5 5-5 5"/><path d="M21 5v14"/></svg>
-        <span>Next piece</span>
-      </button>
-      <button class="pad-act" id="pad-undo">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 0 12h-3"/></svg>
-        <span>Undo</span>
       </button>
     </div>
   </div>
@@ -132,7 +140,7 @@
     <div class="card card-help">
       <h2 class="card-title">How to play</h2>
       <ul class="keys">
-        <li><span class="k-do">Pick a piece</span><span class="k-in">Click or tap it. <kbd>Tab</kbd> cycles through them all.</span></li>
+        <li><span class="k-do">Pick a piece</span><span class="k-in">Click or tap it. <kbd>Tab</kbd> cycles through them all, <kbd>Shift</kbd>+<kbd>Tab</kbd> back.</span></li>
         <li><span class="k-do">Move it</span><span class="k-in">Click a lit tile, drag toward it, or press <span class="k-arrows"><kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd></span></span></li>
         <li><span class="k-do">Push</span><span class="k-in">Walk a piece into another and it shoves it along.</span></li>
         <li><span class="k-do">Undo</span><span class="k-in"><kbd>Z</kbd> — takes back a whole turn, sliding and all.</span></li>
@@ -155,7 +163,6 @@
       </div>
       <div class="level-grid" id="level-grid"></div>
       <div class="sheet-foot">
-        <button class="btn btn-ghost" id="btn-options">Options</button>
         <span class="total-crowns" id="total-crowns"></span>
       </div>
     </div>
@@ -164,7 +171,7 @@
   <div class="overlay overlay-full" id="ov-options" hidden>
     <div class="sheet sheet-narrow">
       <div class="sheet-head">
-        <h2>Options</h2>
+        <h2>Settings</h2>
         <button class="icon-btn" id="options-close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="options" id="options"></div>

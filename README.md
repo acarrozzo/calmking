@@ -63,14 +63,23 @@ python3 -m http.server 8000     # or serve it, if you prefer
 |---|---|
 | Select a piece | click / tap it |
 | Move | click a lit tile, drag toward it, or use arrow keys / WASD |
-| Cycle pieces | `Tab` |
+| Cycle pieces | `Tab` forward, `Shift`+`Tab` back |
 | Undo / Restart | `Z` / `R` |
 | Levels | `Esc` |
 | How to play | `H` — also on the title card and the `?` button in the HUD |
+| Settings | the gear at the top right of the HUD |
 
-There is also an on-screen pad below the board — a direction cluster on the
-left, **Next piece** and **Undo** on the right. It appears by default on touch
-screens and can be forced on or off under Options → On-screen controls.
+Below the board is a bar of buttons that is always available: **Undo** and
+**Restart** stacked at the left, **Prev piece** and **Next piece** stacked at
+the right. When the on-screen pad is on, a direction cross sits between them,
+centred on the same line as the fulcrum — by default on touch screens, and
+forced either way under Settings → On-screen controls. With the pad off the
+two groups lie flat, so no button moves when you toggle it. Below roughly
+540px the labels drop and every button becomes a square key.
+
+The bar echoes whatever you do rather than only what you press on it: moving
+by key, tile click or drag lights the matching direction, `Tab` and
+`Shift`+`Tab` light Next and Prev piece, and `Z` / `R` light Undo and Restart.
 
 Selection stays on the piece you last moved, so a counterweight can be walked
 several tiles without reselecting it.
@@ -199,13 +208,13 @@ from.
 ## Accessibility
 
 Weight is shown three ways at once — piece size, silhouette, and a row of pips
-under each piece — so nothing depends on colour. Options cover sound, volume,
+under each piece — so nothing depends on colour. Settings cover sound, volume,
 animation on/off, animation speed, board shake, and a high-contrast board.
-`prefers-reduced-motion` is respected without touching the options.
+`prefers-reduced-motion` is respected without touching the settings.
 
 Progress lives in `localStorage` under `calmking.v1` and can be erased from
-Options.
+Settings.
 
-**Options → Unlock every level** opens the whole map for playtesting without
+**Settings → Unlock every level** opens the whole map for playtesting without
 touching recorded crowns or best scores, so you can jump straight to a level
 and still switch back to check the real progression.

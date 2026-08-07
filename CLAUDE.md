@@ -296,7 +296,7 @@ Two traps worth knowing:
 - **`--floor-bg` must be declared on `.app`, not `:root`.** A custom property resolves the `var()`s inside it against the element it is *declared* on. On `:root` it would bake in the parchment defaults and no `.app.board-*` class could ever override it.
 - **Board-wide grain goes in `--floor-tex`,** which `.cell-top::before` positions by the tile's `--col`/`--row`. Putting a vein in `--floor-bg` restarts it in every tile and reads as scratches.
 
-Both settings live in Options and nowhere else. The playtest scaffolding that once sat on the board — a floating cycler and `?pieces=`/`?board=` URL parameters — has been removed.
+Both settings live in Settings (the gear at the top right of the HUD, overlay id `ov-options`) and nowhere else. The playtest scaffolding that once sat on the board — a floating cycler and `?pieces=`/`?board=` URL parameters — has been removed.
 
 ## Before finishing
 

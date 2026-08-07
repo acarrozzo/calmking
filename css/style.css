@@ -189,8 +189,15 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   grid-template-rows: auto 1fr auto;
   padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
 
-  /* room taken by the header, the hint line and (when shown) the pad */
-  --pad-space: 0px;
+  /* One key size for the whole button lockup. Two stacked actions plus the
+     gap come to exactly the height of the direction pad, so all three groups
+     of the bar measure the same. */
+  --key: clamp(46px, 13vw, 58px);
+
+  /* room taken by the header, the hint line and the pad. The action groups
+     are always there, so even without the direction pad they cost a row —
+     one key tall lying flat, two keys tall stacked beside the pad. */
+  --pad-space: calc(var(--key) + 16px);
   --board: min(76vmin, 560px, calc(100vh - 210px - var(--pad-space)));
 
   /* everything below is derived from --tile, so it has to live here too */
@@ -201,7 +208,12 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 @supports (height: 100dvh) {
   .app { --board: min(76vmin, 560px, calc(100dvh - 210px - var(--pad-space))); }
 }
-.app.has-pad { --pad-space: 148px; }
+.app.has-pad { --pad-space: calc(var(--key) * 2 + 22px); }
+
+/* A mouse does not need a thumb-sized target, so the whole bar comes down. */
+@media (hover: hover) and (pointer: fine) {
+  .app { --key: 44px; }
+}
 
 /* ------------------------------------------------------------------- hud */
 
@@ -1008,11 +1020,15 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 
 /* ------------------------------------------------------- on-screen pad */
 
+/* A triptych: undo and restart at the left edge, piece cycling at the right,
+   the direction pad dead centre. Equal outer columns put the cross on the
+   board's centre line — the same line the fulcrum stands on — whatever the
+   two side groups happen to measure. */
 .pad {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
@@ -1020,64 +1036,80 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   user-select: none;
   -webkit-user-select: none;
 }
+/* The pad sits after both action groups in the source so the buttons either
+   side of it keep a sensible tab order — without this it would auto-place
+   onto a second row rather than into the column left for it. */
+.pad > * { grid-row: 1; }
 .pad[hidden] { display: none; }
 
-.pad-dir {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-.pad-btn {
-  width: clamp(46px, 13vw, 58px);
-  height: clamp(46px, 13vw, 58px);
-  display: grid;
-  place-items: center;
-  padding: 0;
+/* Both kinds of key are cut from the same material — only the footprint and
+   what sits inside them differs. */
+.pad-btn, .pad-act {
   border-radius: 12px;
   border: 1px solid rgba(236, 224, 200, .2);
   background: linear-gradient(#202634, #161b26);
   color: var(--parchment);
   cursor: pointer;
-  transition: background 120ms, border-color 120ms, transform 80ms;
+  transition: background 120ms, border-color 120ms, opacity 140ms, transform 80ms;
   touch-action: manipulation;
 }
-.pad-btn svg { width: 60%; height: 60%; stroke-width: 2.4; }
-.pad-btn.up    { grid-column: 2; grid-row: 1; }
-.pad-btn.left  { grid-column: 1; grid-row: 2; }
-.pad-btn.down  { grid-column: 2; grid-row: 2; }
-.pad-btn.right { grid-column: 3; grid-row: 2; }
-.pad-btn:hover { background: linear-gradient(#283044, #1b2130); }
-.pad-btn:active, .pad-btn.lit {
+.pad-btn:hover, .pad-act:hover { background: linear-gradient(#283044, #1b2130); }
+/* .lit is the echo the script paints on however the action was asked for. */
+.pad-btn:active, .pad-btn.lit,
+.pad-act:active, .pad-act.lit {
   background: linear-gradient(#3c4761, #262d3d);
   border-color: var(--brass);
   transform: translateY(1px);
 }
+.pad-btn:focus-visible, .pad-act:focus-visible { outline: 2px solid var(--royal-lit); outline-offset: 2px; }
+
+/* Up and down stay stacked against each other; left and right span both rows
+   so they centre on the seam between them. */
+.pad-dir {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 6px;
+}
+.pad-dir[hidden] { display: none; }
+.pad-btn {
+  width: var(--key);
+  height: var(--key);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.pad-btn svg { width: 60%; height: 60%; stroke-width: 2.4; }
+.pad-btn.up    { grid-column: 2; grid-row: 1; }
+.pad-btn.down  { grid-column: 2; grid-row: 2; }
+.pad-btn.left  { grid-column: 1; grid-row: 1 / span 2; align-self: center; }
+.pad-btn.right { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
 
 .pad-acts { display: grid; gap: 6px; }
+.pad-acts-aux  { grid-column: 1; justify-self: start; }
+.pad-acts-main { grid-column: 3; justify-self: end; }
 .pad-act {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: clamp(34px, 9vw, 40px);
-  padding: 0 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(236, 224, 200, .2);
-  background: rgba(236, 224, 200, .06);
-  color: var(--parchment);
-  font: 500 12.5px/1 var(--font-ui);
-  cursor: pointer;
-  transition: background 120ms, border-color 120ms, opacity 140ms, transform 80ms;
-  touch-action: manipulation;
+  justify-content: center;
+  gap: 9px;
+  min-height: var(--key);
+  padding: 0 15px;
+  font: 500 13px/1 var(--font-ui);
+  white-space: nowrap;
 }
-.pad-act svg { width: 17px; height: 17px; flex: none; }
-.pad-act:hover { background: rgba(236, 224, 200, .13); }
-.pad-act:active { transform: translateY(1px); }
+.pad-act svg { width: 19px; height: 19px; flex: none; stroke-width: 2; }
 .pad-act[disabled] { opacity: .32; cursor: default; }
-.pad-btn:focus-visible, .pad-act:focus-visible { outline: 2px solid var(--royal-lit); outline-offset: 2px; }
 
-@media (max-width: 380px) {
+/* With no direction pad the two groups lie flat and keep their corners, so a
+   button does not move when the pad is switched on or off. */
+.pad.no-dir .pad-acts { grid-auto-flow: column; }
+
+/* Too narrow for four labels — the actions become square keys like the pad's
+   own, and the titles carry their names. */
+@media (max-width: 540px) {
   .pad-act span { display: none; }
-  .pad-act { padding: 0 10px; justify-content: center; }
+  .pad-act { width: var(--key); padding: 0; }
 }
 
 /* -------------------------------------------------------------- overlays */
@@ -1444,7 +1476,6 @@ kbd {
   @supports (height: 100dvh) {
     .app { --board: min(84vmin, 430px, calc(100dvh - 200px - var(--pad-space))); }
   }
-  .app.has-pad { --pad-space: 132px; }
   .hud { grid-template-columns: 1fr auto; row-gap: 8px; }
   .hud-meter { grid-column: 1 / -1; grid-row: 2; }
   .stat-k { display: none; }
@@ -1453,6 +1484,5 @@ kbd {
 
 @media (max-height: 620px) {
   .teach { min-height: 1.6em; font-size: 12px; }
-  .app.has-pad { --pad-space: 118px; }
-  .pad-btn { width: clamp(40px, 11vw, 50px); height: clamp(40px, 11vw, 50px); }
+  .app { --key: clamp(40px, 11vw, 44px); }
 }

@@ -137,6 +137,22 @@
       '<path d="M41.5 35.5 a12 12 0 0 1 4-8" fill="none" stroke="#828a98" stroke-width="2.2" opacity=".65"/>' +
       '<path d="M38.5 30.5 c7.5-3 15.5-3 23 0" fill="none" stroke="#14161a" stroke-width="2.4"/>' +
       '<path d="M38 74 c8 2 16 2 24 0 M36.6 88 c9 2 18 2 27 0" fill="none" stroke="#252931" stroke-width="2" opacity=".9"/>' +
+      '</svg>',
+
+    /* A brass key, propped upright against nothing in particular. Small and
+     * slight, because it is the lightest thing in the kingdom — and brass, so
+     * it belongs to the same family of fittings as the gate and the lock. */
+    key:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<ellipse cx="50" cy="115" rx="13" ry="3.6" fill="#a08a5e" stroke="#6b501a" stroke-width="1.4"/>' +
+      '<path d="M50 58 v54" fill="none" stroke="#7d5f22" stroke-width="8" stroke-linecap="round"/>' +
+      '<path d="M50 58 v54" fill="none" stroke="#d8ad52" stroke-width="4.6" stroke-linecap="round"/>' +
+      '<path d="M53 88 h13 v7 h-13 z M53 102 h9 v7 h-9 z" ' +
+      'fill="#d8ad52" stroke="#7d5f22" stroke-width="2" stroke-linejoin="round"/>' +
+      '<circle cx="50" cy="44" r="16" fill="#d8ad52" stroke="#7d5f22" stroke-width="3"/>' +
+      '<circle cx="50" cy="44" r="7.5" fill="#efe2c4" stroke="#7d5f22" stroke-width="2.4"/>' +
+      '<path d="M40 36 a16 16 0 0 1 8-6.5" fill="none" stroke="#f6e3b0" stroke-width="2.8" ' +
+      'opacity=".75" stroke-linecap="round"/>' +
       '</svg>'
   };
 
@@ -204,6 +220,18 @@
       '<path d="M40 92 l3-38 h14 l3 38 z" fill="#565c68" stroke="#0f1114" stroke-width="3" stroke-linejoin="round"/>' +
       '<path d="M32 100 h36" stroke="#0f1114" stroke-width="4" fill="none"/>' +
       '<path d="M26 46 h20" stroke="#767e8c" stroke-width="3.4" opacity=".7" fill="none" stroke-linecap="round"/>' +
+      '</svg>',
+
+    /* The smallest medallion on the board, and the only one struck in brass. */
+    key:
+      '<svg viewBox="0 0 100 120" aria-hidden="true">' +
+      '<circle cx="50" cy="82" r="23" fill="#e8d3a0" stroke="#8a6f34" stroke-width="4.5"/>' +
+      '<circle cx="43" cy="74" r="7.5" fill="none" stroke="#7d5f22" stroke-width="4"/>' +
+      '<path d="M48 79 l14 14" fill="none" stroke="#7d5f22" stroke-width="4.6" stroke-linecap="round"/>' +
+      '<path d="M56 87 l4 4 M60 91 l4 4" fill="none" stroke="#7d5f22" stroke-width="4.6" ' +
+      'stroke-linecap="round"/>' +
+      '<path d="M34 74 a23 23 0 0 1 11-12" stroke="#fff6df" stroke-width="3.4" opacity=".7" ' +
+      'fill="none" stroke-linecap="round"/>' +
       '</svg>'
   };
 
@@ -219,11 +247,15 @@
     '<div class="gate-frame"></div><div class="gate-bars">' +
     '<i></i><i></i><i></i><i></i></div>';
 
-  /* A socket in the floor. Stand on it and the frame re-hangs itself here. */
-  var PIN_ART =
-    '<svg class="pin-art" viewBox="0 0 40 40" aria-hidden="true">' +
-    '<circle cx="20" cy="20" r="11" class="pin-socket"/>' +
-    '<path d="M20 9 L29 25 H11 z" class="pin-wedge"/></svg>';
+  /* A barred block with a keyhole. Nothing shifts it: a royal has to walk up
+   * with a key and spend it, and then it is plain floor for good. */
+  var LOCK_ART =
+    '<div class="lock-slab"><i></i><i></i><i></i></div>' +
+    '<svg class="lock-plate" viewBox="0 0 40 40" aria-hidden="true">' +
+    '<path d="M14.5 17 v-3.5 a5.5 5.5 0 0 1 11 0 V17" class="lock-shackle" fill="none"/>' +
+    '<rect x="10" y="17" width="20" height="15" rx="2.6" class="lock-body"/>' +
+    '<circle cx="20" cy="23.5" r="2.6" class="lock-hole"/>' +
+    '<path d="M20 25 l-1.8 5.4 h3.6 z" class="lock-hole"/></svg>';
 
   var GATE_ART =
     '<svg class="gate" viewBox="0 0 40 40" aria-hidden="true">' +
@@ -306,9 +338,9 @@
           el.setAttribute('aria-label', 'Pressure plate, needs weight ' + cell.need);
         } else if (cell.t === 'door') {
           top.innerHTML = PORTCULLIS_ART;
-        } else if (cell.t === 'pin') {
-          top.innerHTML = PIN_ART;
-          el.setAttribute('aria-label', 'Pivot pin');
+        } else if (cell.t === 'lock') {
+          top.innerHTML = LOCK_ART;
+          el.setAttribute('aria-label', 'Locked block');
         }
         el.appendChild(top);
 
@@ -331,9 +363,8 @@
     this.setTilt(0, true);
   };
 
-  /* Slide the fulcrum under the board and swing the rig about the new column.
-   * Instant on mount, animated afterwards — the frame visibly re-hanging
-   * itself is the whole point of a pin. */
+  /* Slide the fulcrum under the board. The column is the level's own and does
+   * not change during play, so this runs once per level, on mount. */
   Renderer.prototype.setPivot = function (col, instant) {
     if (col === this.pivot) return;
     this.pivot = col;
@@ -343,19 +374,15 @@
       void this.scene.offsetWidth;
       this.scene.classList.remove('no-pivot-anim');
     }
-    if (!this.level || !this.level.pins.length) return;
-    for (var i = 0; i < this.level.pins.length; i++) {
-      var pin = this.level.pins[i];
-      this.cellAt(pin.col, pin.row).classList.toggle('holding', pin.col === col);
-    }
   };
 
   Renderer.prototype.cellAt = function (c, r) {
     return this.cells[r * GRID + c];
   };
 
-  /* Floors that have given way, and whether the portcullises are up. */
-  Renderer.prototype.applyTiles = function (broken, gates) {
+  /* Floors that have given way, portcullises that are up, and locks that have
+   * been spent — a spent one is ordinary floor and says so. */
+  Renderer.prototype.applyTiles = function (broken, gates, opened) {
     var self = this, level = this.level;
     for (var i = 0; i < level.fragiles.length; i++) {
       var f = level.fragiles[i];
@@ -365,17 +392,12 @@
       var d = level.doors[j];
       self.cellAt(d.col, d.row).classList.toggle('open', !!gates);
     }
-  };
-
-  /* `loaded` means something is standing here; `holding` means this pin is the
-   * one the frame is actually hanging from. Load two and every pin is loaded
-   * but none is holding, which is exactly what the player needs to see. */
-  Renderer.prototype.applyPins = function (pieces) {
-    var level = this.level;
-    for (var i = 0; i < level.pins.length; i++) {
-      var pin = level.pins[i];
-      var on = E.piecesAt(pieces, pin.col, pin.row).length;
-      this.cellAt(pin.col, pin.row).classList.toggle('loaded', on > 0);
+    for (var k = 0; k < level.locks.length; k++) {
+      var lk = level.locks[k];
+      var cell = self.cellAt(lk.col, lk.row);
+      var done = !!(opened && opened[lk.col + ',' + lk.row]);
+      cell.classList.toggle('unlocked', done);
+      cell.setAttribute('aria-label', done ? 'Opened lock' : 'Locked block');
     }
   };
 
@@ -409,7 +431,8 @@
       el.setAttribute('tabindex', E.movableP(p) ? '0' : '-1');
       el.setAttribute('aria-label',
         (p.label || type.name) + ', weight ' + E.weightOf(p) +
-        (E.movableP(p) ? '' : ', immovable'));
+        (p.type === 'key' ? ', for the King or Queen to carry'
+                          : E.movableP(p) ? '' : ', immovable'));
 
       var pips = '';
       for (var i = 0; i < E.weightOf(p); i++) pips += '<i></i>';
@@ -438,14 +461,10 @@
     opts = opts || {};
     var self = this;
     this.syncPieces(pieces);
-    if (opts.broken !== undefined || opts.gates !== undefined) {
-      this.applyTiles(opts.broken, opts.gates);
+    if (opts.broken !== undefined || opts.gates !== undefined || opts.opened !== undefined) {
+      this.applyTiles(opts.broken, opts.gates, opts.opened);
     }
     this.applyPlates(pieces);
-    if (this.level.pins.length) {
-      this.applyPins(pieces);
-      this.setPivot(E.pivotOf(this.level, pieces), opts.instant);
-    }
 
     var groups = {};
     pieces.forEach(function (p) {
@@ -470,6 +489,8 @@
         el.style.setProperty('--sy', offY.toFixed(1) + 'px');
         el.style.zIndex = String(10 + p.row * 2 + (i ? 1 : 0));
         el.classList.toggle('sliding', !!opts.sliding);
+        /* a key in hand rides small and close, rather than standing about */
+        el.classList.toggle('carried', !!p.held);
 
         var badge = el.querySelector('.stack-badge');
         if (n > 1 && i === 0) {
@@ -541,7 +562,7 @@
       self.pieceEls[pid].classList.toggle('selected', pid === id);
     });
     this.cells.forEach(function (c) {
-      c.classList.remove('target', 'shove', 'risky', 'crumbles');
+      c.classList.remove('target', 'shove', 'risky', 'crumbles', 'unlocks');
     });
     if (!moves) return;
 
@@ -553,6 +574,7 @@
       cell.style.setProperty('--i', i);
       if (m.pushes && m.pushes.length) cell.classList.add('shove');
       if (m.breaks) cell.classList.add('crumbles');
+      if (m.opens) cell.classList.add('unlocks');
       if (Math.abs(m.ratio) >= 0.88) cell.classList.add('risky');
       cell.dataset.dc = m.dc;
       cell.dataset.dr = m.dr;

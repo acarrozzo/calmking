@@ -30,18 +30,24 @@ function show(label) {
   for (let r = 0; r < 7; r++) {
     let line = '';
     for (let c = 0; c < 7; c++) {
-      const here = E.piecesAt(state.pieces, c, r);
+      /* a carried key rides on its bearer's tile, so it is not a second piece
+         standing there — show the bearer, in lower case to say hands full */
+      const all = E.piecesAt(state.pieces, c, r);
+      const here = all.filter((p) => !p.held);
+      const bearing = all.some((p) => p.held);
       const cell = E.cellAt(level, c, r);
       if (state.broken[c + ',' + r]) line += ' ';
       else if (here.length > 1) line += String(here.length);
-      else if (here.length === 1) line += here[0].id.toUpperCase();
+      else if (here.length === 1) {
+        line += bearing ? here[0].id.toLowerCase() : here[0].id.toUpperCase();
+      }
       else if (cell.t === 'wall') line += '#';
       else if (c === level.exit.col && r === level.exit.row) line += 'E';
       else if (cell.t === 'cradle') line += 'o';
       else if (cell.t === 'slick') line += '~';
       else if (cell.t === 'fragile') line += 'x';
       else if (cell.t === 'plate') line += String(cell.need);
-      else if (cell.t === 'pin') line += 'A';
+      else if (cell.t === 'lock') line += state.opened[c + ',' + r] ? ',' : 'L';
       else if (cell.t === 'door') line += E.doorsOpen(level, state.pieces) ? ':' : 'd';
       else if (cell.t === 'oneway') line += { '1,0': '>', '-1,0': '<', '0,-1': '^', '0,1': 'v' }[cell.dc + ',' + cell.dr];
       else line += '.';

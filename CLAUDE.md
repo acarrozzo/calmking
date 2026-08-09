@@ -66,7 +66,7 @@ Keep these responsibilities in the engine:
 - Level construction and validation
 - Piece types, movement, pushing, and stacking
 - Torque, balance ratios, zones, and which column the frame currently hangs from
-- Doors, plates, one-way ledges, fragile floors, ice, rolling, and pivot pins
+- Doors, plates, one-way ledges, fragile floors, ice, rolling, keys and locks
 - Which pieces count as royal, and what the royal party has to do to win
 - Full-turn resolution and animation snapshots
 - Win, tipped, and stranded outcomes
@@ -93,17 +93,19 @@ Every map is exactly 7 rows of 7 characters.
 ```text
 .  floor       #  wall       E  gate (exit)   o  cradle
 ~  ice         x  fragile    d  portcullis    1/2/4  pressure plate
-A  pivot pin   > < ^ v  one-way ledges
+L  locked block            > < ^ v  one-way ledges
 ```
 
-The engine cell type for `d` is `door`; prose in the game calls it a portcullis.
+The engine cell type for `d` is `door`; prose in the game calls it a portcullis. The key that opens an `L` is a piece, not a map character.
+
+A level with an `L` must ship at least one `key` piece, and a `key` piece must have something to open; `buildLevel` throws otherwise.
 
 Common level fields are `id`, `chapter`, `title`, `teach`, `teachUntil`, `idea`, `pivot`, `capacity`, `map`, `pieces`, and `par`. Only `id`, `map`, `pieces`, and `capacity` really have to be right per level: `pivot` defaults to column 3, `chapter` to 1, and `teachUntil` to `move`.
 
 `teachUntil` is a closed set, defined by `TEACH_DONE` in `js/ui.js`:
 
 ```text
-move  other  push  stack  slide  oneway  break  gate  pin  royal
+move  other  push  stack  slide  oneway  break  gate  key  lock  royal
 ```
 
 An unrecognised key silently falls back to `move`, so the teach line disappears after one move instead of erroring. Add the key to `TEACH_DONE` before using it in a level.
@@ -129,6 +131,7 @@ marble     1      yes     yes   rolls once the board really leans
 stone      2      yes     no
 iron       4      yes     no    the only piece that alone satisfies a 4-plate
 statue     3      no      no    immovable; stops push chains
+key        1      no      no    royals only; picked up by walking onto it
 ```
 
 A level may override `w`, `movable`, or `rolls` per piece, but prefer plain types.
@@ -142,13 +145,9 @@ ratio  = torque / capacity
 
 The board tips when `abs(ratio) >= 1`. Distance from the pivot matters as much as weight.
 
-The pivot column is **not** fixed. `engine.pivotOf(level, pieces)` derives it from the current arrangement:
+The pivot column is fixed per level: `level.pivot`, which defaults to column 3. Nothing during play moves it.
 
-- No pin tiles on the map, or no pin occupied: the level's own `pivot`.
-- Exactly one occupied pin column: the frame hangs from that column instead.
-- Two or more occupied pins in different columns: the frame has nothing to choose between them and swings back to the level's `pivot`.
-
-It is derived purely from piece positions, so it needs no state and costs the solver nothing. Anything computing torque must go through `pivotOf` rather than reading `level.pivot`.
+A carried key has no position of its own — `syncCarried` keeps it on its bearer's tile — so its weight counts from whichever column the bearer is standing in, and vanishes from the board entirely when a lock spends it.
 
 ### Turn order
 
@@ -180,6 +179,27 @@ A tip takes precedence over reaching the gate on the same turn.
 - Leaving a portcullis tile is always allowed.
 - Royals may share the gate tile: a royal walking into a royal already home joins them rather than pushing them off. No other piece may share it, and a non-royal is pushed onward as usual.
 
+### Keys and locks
+
+A locked block (`L`) is a wall with one answer. State lives in `state.opened`, a
+set of `"col,row"` keys shaped exactly like `state.broken`.
+
+- A loose key is immovable to everything. It stops push chains like a statue.
+- A royal who is empty-handed and arrives on a loose key picks it up. Arriving
+  covers being pushed there as well as walking there.
+- A royal already carrying a key cannot take a second: the tile is blocked.
+- A carried key rides on its bearer's tile and is never an obstacle. Anything
+  asking "is this tile free" must use `standingAt`, not `piecesAt`, or a key
+  whose bearer has already moved this pass becomes a phantom wall. Anything
+  asking "what weight is here" — plates, torque — goes on using `piecesAt`.
+- Only the piece doing the walking can spend a key. A royal shoved into a lock
+  is blocked, however full their hands are.
+- Spending a key opens that tile for good and removes the key from `pieces`, so
+  its weight leaves the board at the moment the block opens.
+- Sliding never opens a lock; a shut lock stops a slide like any wall.
+- `canReachGate` treats locks as passable, exactly as it treats portcullises.
+  Stranding stays generous, so it can never fire a false alarm.
+
 ### Sliding
 
 - Marbles roll at the engine's rolling threshold.
@@ -193,7 +213,7 @@ Undo restores a whole turn, including pushes, slides, broken floors, selection, 
 
 Any new stateful mechanic must be represented in:
 
-- Engine state and cloning
+- Engine state and cloning (`broken` and `opened` are the two existing examples)
 - Solver state keys
 - Turn resolution
 - Undo snapshots

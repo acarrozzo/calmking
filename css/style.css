@@ -498,10 +498,10 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 }
 
 /* A fitting sunk into the floor: one recess shared by cradles, plates and
-   pins so all three read as the same piece of joinery in every theme. */
+   spent locks so all three read as the same piece of joinery in every theme. */
 .cell.cradle .cell-top,
 .cell.plate .cell-top,
-.cell.pin .cell-top {
+.cell.lock.unlocked .cell-top {
   background:
     radial-gradient(56% 56% at 50% 47%, var(--fit-deep) 0%, rgba(0, 0, 0, 0) 64%),
     var(--floor-bg);
@@ -639,45 +639,67 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
   transform: translate(-50%, -50%) rotateX(calc(-1 * var(--pitch))) scale(.88);
 }
 
-/* ---- pivot pin ---- */
+/* ---- locked block ---- */
 
-/* scoped like .ledge — a bare .pin would also match the cell, which carries
-   class="cell pin", and blow the tile up to fill the board */
-.cell.pin .pin-art {
+/* A banded slab standing in the maze. Shape, not colour, says it is shut:
+   the bands and the padlock are gone once it has been spent, and the tile
+   sinks into the same recess the cradles and plates use. */
+.cell.lock .cell-top {
+  background: linear-gradient(150deg, var(--frame), var(--frame-dark));
+  border-color: var(--wall-line);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, .55);
+}
+.lock-slab {
   position: absolute;
-  inset: 20%;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 9% 0;
+  transition: opacity 300ms;
+}
+.lock-slab i {
+  height: 16%;
+  background: linear-gradient(rgba(255, 255, 255, .16), rgba(0, 0, 0, .3));
+  border-top: 1px solid rgba(255, 255, 255, .13);
+  border-bottom: 1px solid rgba(0, 0, 0, .4);
+}
+.cell.lock .lock-plate {
+  position: absolute;
+  inset: 22%;
   overflow: visible;
+  transition: opacity 300ms, transform 380ms cubic-bezier(.3, .8, .3, 1);
 }
-.cell.pin .pin-socket {
-  fill: rgba(0, 0, 0, .18);
-  stroke: var(--etch-soft);
-  stroke-width: 1.6;
-  stroke-dasharray: 3 3;
-  transition: fill 200ms, stroke 200ms;
+.cell.lock .lock-body {
+  fill: var(--brass-dim);
+  stroke: #4a3712;
+  stroke-width: 2;
 }
-.cell.pin .pin-wedge {
-  fill: var(--etch-soft);
-  stroke: var(--etch);
-  stroke-width: 1.4;
-  stroke-linejoin: round;
-  transition: fill 200ms, stroke 200ms, filter 200ms;
+.cell.lock .lock-shackle {
+  stroke: var(--brass);
+  stroke-width: 3.4;
+  stroke-linecap: round;
 }
-/* something is standing here */
-.cell.pin.loaded .pin-socket { fill: rgba(0, 0, 0, .32); stroke: rgba(208, 168, 79, .5); }
-/* ...and this is the pin the frame is actually hanging from */
-.cell.pin.holding .cell-top {
-  background:
-    radial-gradient(60% 60% at 50% 47%, rgba(0, 0, 0, .45) 0%, rgba(0, 0, 0, 0) 66%),
-    radial-gradient(56% 56% at 50% 47%, var(--fit-deep) 0%, rgba(0, 0, 0, 0) 64%),
-    var(--floor-bg);
-  box-shadow: inset 0 3px 12px rgba(20, 14, 4, .8), 0 0 18px rgba(208, 168, 79, .4);
+.cell.lock .lock-hole {
+  fill: #2a2115;
+  stroke: none;
 }
-.cell.pin.holding .pin-wedge {
-  fill: var(--brass);
-  stroke: #6b501a;
-  filter: drop-shadow(0 0 6px rgba(208, 168, 79, .85));
+/* spent: the bands drop away and the keyhole plate falls into the floor */
+.cell.lock.unlocked .lock-slab { opacity: 0; }
+.cell.lock.unlocked .lock-plate {
+  opacity: 0;
+  transform: translateY(14%) scale(.7);
 }
-.cell.pin.holding .pin-socket { stroke: var(--brass); stroke-dasharray: none; }
+.app.calm-motion .cell.lock .lock-slab,
+.app.calm-motion .cell.lock .lock-plate { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .cell.lock .lock-slab, .cell.lock .lock-plate { transition: none; }
+}
+/* the tile the key is about to be spent on */
+.cell.target.unlocks .dot { opacity: 0; }
+.cell.target.unlocks .cell-top {
+  box-shadow: inset 0 0 0 3px rgba(208, 168, 79, .9), inset 0 0 18px rgba(208, 168, 79, .35);
+}
 
 /* ---- the pair, reunited ---- */
 
@@ -862,6 +884,13 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 /* The medallions are wider and shorter than the standing figures, so they
    sit a little differently on the tile. */
 .app.pieces-token .p-fig { height: 84%; bottom: 23%; }
+
+/* A key being carried tucks in beside its bearer at half size, so the tile
+   still reads as one royal with something in hand rather than two pieces. */
+.piece.carried .p-fig { height: 46%; bottom: 34%; }
+.app.pieces-token .piece.carried .p-fig { height: 44%; bottom: 36%; }
+.piece.carried .p-shadow { opacity: 0; }
+.piece.carried .p-pips { opacity: .7; }
 
 .piece { pointer-events: none; }
 .piece .hit {

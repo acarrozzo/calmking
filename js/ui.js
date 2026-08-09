@@ -145,7 +145,8 @@
     oneway: function () { return !!g.did.oneway; },
     'break': function () { return !!g.did['break']; },
     gate: function () { return !!g.did.gate; },
-    pin:  function () { return !!g.did.pin; },
+    key:  function () { return !!g.did.key; },
+    lock: function () { return !!g.did.lock; },
     royal: function () { return !!g.did.royal; }
   };
 
@@ -158,7 +159,11 @@
   var tickTimer = 0;
 
   function tileState() {
-    return { broken: g.gs.broken, gates: E.doorsOpen(g.level, g.gs.pieces) };
+    return {
+      broken: g.gs.broken,
+      opened: g.gs.opened,
+      gates: E.doorsOpen(g.level, g.gs.pieces)
+    };
   }
 
   function hasQueen() {
@@ -257,7 +262,13 @@
   function select(id, quiet) {
     var p = E.byId(g.gs.pieces, id);
     if (!p || !E.movableP(p)) {
-      if (p) { renderer.nudge(id); A.play('deny'); toast(E.typeOf(p).name + ' will not budge.'); }
+      if (p) {
+        renderer.nudge(id);
+        A.play('deny');
+        toast(p.type === 'key'
+          ? 'Only the King or Queen can pick that up.'
+          : E.typeOf(p).name + ' will not budge.');
+      }
       return;
     }
     g.selected = id;
@@ -274,6 +285,7 @@
     return {
       pieces: E.clonePieces(g.gs.pieces),
       broken: E.cloneBroken(g.gs.broken),
+      opened: E.cloneOpened(g.gs.opened),
       moves: g.gs.moves,
       status: g.gs.status,
       selected: g.selected
@@ -326,8 +338,9 @@
       if (!store.learned.other) { store.learned.other = true; saveStore(); }
     }
     if (E.isRoyal(moved) && moved.type !== 'king') g.did.royal = true;
+    /* a key travelling in a royal hand is not a shove and not a shared tile */
     if (res.frames[0].pieces.some(function (p) {
-      var was = p.id !== id && E.byId(before, p.id);
+      var was = p.id !== id && !p.held && E.byId(before, p.id);
       return was && (was.col !== p.col || was.row !== p.row);
     })) g.did.push = true;
     if (res.frames.length > 1) g.did.slide = true;
@@ -335,11 +348,16 @@
     if (E.cellAt(g.level, landed.col, landed.row).t === 'oneway') g.did.oneway = true;
     for (var bk in res.state.broken) if (res.state.broken[bk]) g.did.break = true;
     if (g.level.plates.length && E.doorsOpen(g.level, res.state.pieces)) g.did.gate = true;
-    /* the pin has taught its lesson once the frame has actually re-hung itself */
-    if (g.level.pins.length &&
-        E.pivotOf(g.level, res.state.pieces) !== E.pivotOf(g.level, before)) g.did.pin = true;
+    /* the key has taught its lesson once it is actually in a royal hand, and
+       the lock once one has been spent */
+    if (E.isRoyal(moved) && E.keyHeldBy(res.state.pieces, moved.id)) g.did.key = true;
+    for (var ok in res.state.opened) if (res.state.opened[ok]) g.did.lock = true;
     res.state.pieces.forEach(function (p) {
-      if (E.piecesAt(res.state.pieces, p.col, p.row).length > 1) g.did.stack = true;
+      if (p.held) return;
+      var sharing = E.piecesAt(res.state.pieces, p.col, p.row).filter(function (q) {
+        return !q.held;
+      });
+      if (sharing.length > 1) g.did.stack = true;
     });
 
     g.lastMoved = id;
@@ -368,7 +386,7 @@
     var timer = 0, over = false;
 
     function land(f) {
-      renderer.draw(f.pieces, { broken: f.broken, gates: f.gates });
+      renderer.draw(f.pieces, { broken: f.broken, opened: f.opened, gates: f.gates });
       renderer.setTilt(f.ratio);
       updateMeter(f.ratio, f.zone);
       g.lastZone = f.zone;
@@ -384,7 +402,9 @@
 
     function step() {
       var f = frames[i];
-      renderer.draw(f.pieces, { sliding: f.kind === 'slide', broken: f.broken, gates: f.gates });
+      renderer.draw(f.pieces, {
+        sliding: f.kind === 'slide', broken: f.broken, opened: f.opened, gates: f.gates
+      });
       renderer.setTilt(f.ratio);
       updateMeter(f.ratio, f.zone);
 
@@ -541,7 +561,10 @@
     if (g.busy) skipAnimation();
     if (g.busy || !g.history.length) return;
     var snap = g.history.pop();
-    g.gs = { pieces: snap.pieces, broken: snap.broken, moves: snap.moves, status: snap.status };
+    g.gs = {
+      pieces: snap.pieces, broken: snap.broken, opened: snap.opened,
+      moves: snap.moves, status: snap.status
+    };
     hideAll();
     renderer.resetTip();
     renderer.clearCheer();

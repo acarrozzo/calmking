@@ -8,12 +8,15 @@
  *   > < ^ v  one-way ledge — may only be entered moving the way it points
  *   d  portcullis        — passable only while every plate is loaded
  *   1 2 4  pressure plate — needs that much weight standing on it
- *   A  pivot pin         — while exactly one is loaded, the frame hangs there
+ *   L  locked block      — a wall until a royal walks into it carrying a key,
+ *                          which spends the key and leaves plain floor
+ *
+ * The key itself is a piece (`{ type: 'key' }`), not a map character. It
+ * weighs 1, nothing but the King or Queen can shift it, and it is picked up
+ * by walking onto it — from then on its weight travels with whoever has it.
  *
  * pivot is a column index; torque = sum of weight * (col - pivot).
  * capacity is the torque the frame can hold. |torque| >= capacity tips the board.
- * A pin overrides `pivot` while it is the only loaded one, so the same board
- * can be balanced from several different places — see js/engine.js pivotOf.
  *
  * `par` holds the crown targets: three crowns at `three` moves or fewer,
  * two crowns at `two` or fewer, one crown for finishing at all.
@@ -753,53 +756,59 @@
       par: { three: 28, two: 39 }
     },
 
-    /* ------------------------------------- chapter IV: the shifting post */
+    /* ------------------------------------------ chapter IV: the brass keys */
 
     {
       id: 31,
       chapter: 4,
-      title: 'The Frame Re-Hung',
-      teach: 'The carved socket is a pin. Stand a piece on it and the whole ' +
-             'frame hangs from there instead.',
-      teachUntil: 'pin',
-      idea: 'Walk to the gate and it tips. Move the post, and the same walk is free.',
-      capacity: 5,
+      title: 'The Key and the Block',
+      teach: 'A locked block will not shift for anything. Walk a royal onto the key to ' +
+             'pick it up, then into the block to spend it.',
+      teachUntil: 'lock',
+      idea: 'The key is behind you, the gate is in front, and the key weighs ' +
+            'something.',
+      capacity: 7,
       map: [
         '#######',
-        '#...A.#',
-        '#.....#',
-        '#.....E',
         '#######',
+        '#.....#',
+        '#....LE',
+        '#.....#',
         '#######',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'b', type: 'barrel', col: 4, row: 2 }
+        { id: 'k', type: 'king', col: 4, row: 3 },
+        { id: 'y', type: 'key', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 2, row: 3 }
       ],
-      par: { three: 6, two: 8 }
+      par: { three: 10, two: 14 }
     },
 
     {
       id: 32,
       chapter: 4,
-      title: 'The Wrong Side of the Ledge',
-      teach: 'A counterweight you cannot reach is not a counterweight.',
-      idea: 'The iron is stranded east and can never come back. Move the post, not the weight.',
-      capacity: 5,
+      title: 'The Gate Behind You',
+      teach: 'Only the King and Queen can lift a key. Nothing else on the board will ' +
+             'even nudge it.',
+      teachUntil: 'key',
+      idea: 'Home is west now. Everything the kingdom taught you about leaning is ' +
+            'backwards.',
+      capacity: 13,
       map: [
         '#######',
-        '#.#...#',
-        '#.#...#',
-        '#.>...E',
-        '#.#...#',
-        '#.#..A#',
+        '#.#.#.#',
+        '#.....#',
+        'EL.....',
+        '#.....#',
+        '#.#.#.#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 3 },
-        { id: 'b', type: 'barrel', col: 4, row: 1 }
+        { id: 'k', type: 'king', col: 5, row: 3 },
+        { id: 'y', type: 'key', col: 3, row: 1 },
+        { id: 'i', type: 'iron', col: 1, row: 1 },
+        { id: 'v', type: 'statue', col: 1, row: 5 }
       ],
       par: { three: 12, two: 17 }
     },
@@ -807,173 +816,180 @@
     {
       id: 33,
       chapter: 4,
-      title: 'The Rolling Post',
+      title: 'The Four Arms',
       teach: '',
-      idea: 'Move the post and the marble decides to roll. Have the cradle ready.',
-      capacity: 6,
+      idea: 'The gate is up the north arm. The weight that gets you there lives out ' +
+            'on the others.',
+      capacity: 4,
       map: [
-        '#######',
-        '#.#...#',
-        '#.#...#',
-        '#.>...E',
-        '#.#...#',
-        '#.#o.A#',
-        '#######'
+        '###E###',
+        '###L###',
+        '#.....#',
+        '.......',
+        '#.....#',
+        '###.###',
+        '###.###'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 3 },
-        { id: 'm', type: 'marble', col: 4, row: 1, w: 2 }
+        { id: 'k', type: 'king', col: 0, row: 3 },
+        { id: 'y', type: 'key', col: 5, row: 4 },
+        { id: 'i', type: 'iron', col: 4, row: 2 },
+        { id: 'b', type: 'barrel', col: 3, row: 4 }
       ],
-      par: { three: 11, two: 15 }
+      par: { three: 14, two: 20 }
     },
 
     {
       id: 34,
       chapter: 4,
-      title: 'Grip',
-      teach: 'Ice holds while the meter reads Steady — and where the post sits decides that.',
-      idea: 'The same ice is walkable or fatal depending on which post the frame hangs from.',
+      title: 'Winding In',
+      teach: '',
+      idea: 'The road curls inward, and the plank on the way is good for one ' +
+            'crossing.',
       capacity: 5,
       map: [
         '#######',
-        '#.#...#',
-        '#.#~~~#',
-        '#.>...E',
-        '#.#...#',
-        '#.#..A#',
+        '#.....#',
+        '#.###.#',
+        '#.#E#.#',
+        '#.#L#.#',
+        '#x..#.#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 3 },
-        { id: 'b', type: 'barrel', col: 4, row: 2 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 2, row: 1 },
+        { id: 'i', type: 'iron', col: 5, row: 5 },
+        { id: 's', type: 'stone', col: 3, row: 1 }
       ],
-      par: { three: 11, two: 15 }
+      par: { three: 15, two: 21 }
     },
 
     {
       id: 35,
       chapter: 4,
-      title: 'One Crossing',
+      title: 'Two Shores',
       teach: '',
-      idea: 'The bridge holds for one journey. Be sure the post is already where you need it.',
-      capacity: 5,
+      idea: 'The key is on the wrong shore, and the only bridge runs through the ' +
+            'block.',
+      capacity: 6,
       map: [
         '#######',
-        '#.#...#',
-        '#.#...#',
-        '#.x...E',
-        '#.#...#',
-        '#.#..A#',
+        '#..#..#',
+        '#..#..#',
+        '#..L..E',
+        '#..#..#',
+        '#..#..#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 3 },
-        { id: 'b', type: 'barrel', col: 4, row: 5 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 1, row: 5 },
+        { id: 'i', type: 'iron', col: 5, row: 2 },
+        { id: 'b', type: 'barrel', col: 1, row: 3 }
       ],
-      par: { three: 14, two: 19 }
+      par: { three: 16, two: 22 }
     },
 
     {
       id: 36,
       chapter: 4,
-      title: 'Both Posts',
-      teach: 'Load two pins at once and the frame has nowhere to choose between them. ' +
-             'It swings back to its own post.',
-      teachUntil: 'pin',
-      idea: 'The only way back to the middle is to hold down both posts together.',
-      capacity: 5,
+      title: 'The Neck',
+      teach: '',
+      idea: 'The room narrows to one cold tile, and you come back heavier than you ' +
+            'went.',
+      capacity: 4,
       map: [
         '#######',
-        '#.#A..#',
-        '#.#...#',
-        '#.>...E',
-        '#.#...#',
-        '#.#..A#',
-        '#######'
+        '#.....#',
+        '#.....#',
+        '##.~.##',
+        '###L###',
+        '###.###',
+        '###E###'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 4, row: 3 },
-        { id: 'b', type: 'barrel', col: 5, row: 1 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 4, row: 3 },
+        { id: 'i', type: 'iron', col: 3, row: 5 },
+        { id: 'm', type: 'marble', col: 4, row: 1, w: 2 }
       ],
-      par: { three: 14, two: 19 }
+      par: { three: 16, two: 22 }
     },
 
     {
       id: 37,
       chapter: 4,
-      title: 'Two Posts, One Piece',
+      title: 'Among the Pillars',
       teach: '',
-      idea: 'Both posts want holding and there is only one piece that can hold either.',
-      capacity: 5,
+      idea: 'Two cradles, one marble, and a block that wants your hands full.',
+      capacity: 6,
       map: [
         '#######',
-        '#.#A..#',
-        '#.#...#',
-        '#.>.d.E',
-        '#.#.2.#',
-        '#.#..A#',
+        '#....o#',
+        '#.#.#.#',
+        '#....LE',
+        '#.#.#.#',
+        '#o....#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 3 },
-        { id: 'b', type: 'barrel', col: 5, row: 1 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 5, row: 5 },
+        { id: 'i', type: 'iron', col: 3, row: 4 },
+        { id: 'm', type: 'marble', col: 5, row: 4, w: 2 }
       ],
-      par: { three: 14, two: 19 }
+      par: { three: 18, two: 25 }
     },
 
     {
       id: 38,
       chapter: 4,
-      title: 'A Post at the Gate',
+      title: 'Down the Stair',
       teach: '',
-      idea: 'The post is the last tile before the gate, and the marble wants it too.',
-      capacity: 6,
+      idea: 'Every step down the stair is a step further out from the post.',
+      capacity: 12,
       map: [
         '#######',
-        '#.#x..#',
-        '#.#...#',
-        '#.>..AE',
-        '#.#...#',
-        '#.#o..#',
+        '#..####',
+        '#..####',
+        '##.L###',
+        '###..##',
+        '####..E',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 3 },
-        { id: 'm', type: 'marble', col: 4, row: 5, w: 2 },
-        { id: 'b', type: 'barrel', col: 5, row: 1 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 2, row: 1 },
+        { id: 'i', type: 'iron', col: 3, row: 4 },
+        { id: 'b', type: 'barrel', col: 1, row: 2 }
       ],
-      par: { three: 11, two: 15 }
+      par: { three: 20, two: 28 }
     },
 
     {
       id: 39,
       chapter: 4,
-      title: 'Back to the Middle',
+      title: 'Between the Teeth',
       teach: '',
-      idea: 'Everything is already balanced. Every single thing you do breaks it.',
-      capacity: 3,
+      idea: 'Three deep teeth. Whatever you leave standing in one is staying there.',
+      capacity: 6,
       map: [
         '#######',
-        '#.#A..#',
-        '#.#...#',
-        '#.>...E',
-        '#.#...#',
-        '#.#.A.#',
+        '#..L..#',
+        '#.#.#.#',
+        '#.#.#.#',
+        '#.#.#.E',
+        '#.#.#.#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 1 },
-        { id: 's', type: 'stone', col: 4, row: 5 },
-        { id: 'b', type: 'barrel', col: 5, row: 3 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 1, row: 5 },
+        { id: 'i', type: 'iron', col: 4, row: 1 },
+        { id: 's', type: 'stone', col: 3, row: 5 }
       ],
-      par: { three: 15, two: 21 }
+      par: { three: 20, two: 28 }
     },
 
     {
@@ -981,24 +997,24 @@
       chapter: 4,
       title: 'The Third Trial',
       teach: '',
-      idea: 'The King is the post. Someone has to relieve him before he can leave it.',
-      capacity: 3,
+      idea: 'A plate, a portcullis and a block, down three shafts that never line up.',
+      capacity: 9,
       map: [
         '#######',
-        '#.#..4#',
+        '#2#...#',
+        '#.#.#d#',
+        '#...#.#',
         '#.#...#',
-        '#.>.d.E',
-        '#.#...#',
-        '#.#.A.#',
-        '#######'
+        '#.#.#L#',
+        '#...#.E'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 4, row: 5 },
-        { id: 'i', type: 'iron', col: 5, row: 1 },
-        { id: 'b', type: 'barrel', col: 1, row: 1 },
-        { id: 's', type: 'stone', col: 3, row: 2 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 4, row: 1 },
+        { id: 'i', type: 'iron', col: 1, row: 6 },
+        { id: 's', type: 'stone', col: 5, row: 6 }
       ],
-      par: { three: 13, two: 18 }
+      par: { three: 21, two: 29 }
     },
 
     /* --------------------------------------- chapter V: the Queen's road */
@@ -1007,226 +1023,231 @@
       id: 41,
       chapter: 5,
       title: 'The Queen',
-      teach: 'The Queen travels with you now. The gate holds them both — and it ' +
-             'is not over until both are standing in it.',
+      teach: 'The Queen travels with you now. The gate holds them both — and it is not ' +
+             'over until both are standing in it.',
       teachUntil: 'royal',
       idea: 'She weighs almost nothing, which is the whole of her problem.',
       capacity: 4,
       map: [
         '#######',
-        '#######',
-        '#.....#',
-        '#.....E',
-        '#.....#',
-        '#######',
-        '#######'
-      ],
-      pieces: [
-        { id: 'k', type: 'king', col: 4, row: 2 },
-        { id: 'q', type: 'queen', col: 1, row: 4 },
-        { id: 'i', type: 'iron', col: 3, row: 3 }
-      ],
-      par: { three: 9, two: 13 }
-    },
-
-    {
-      id: 42,
-      chapter: 5,
-      title: 'Two Crowns, One Frame',
-      teach: '',
-      idea: 'Two bodies on one frame. Whichever of them moves, the other one pays for it.',
-      capacity: 4,
-      map: [
-        '#######',
         '#.....#',
         '#.###.#',
-        'o.....E',
+        '#.###.E',
         '#.###.#',
         '#.....#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 0, row: 3 },
-        { id: 'q', type: 'queen', col: 4, row: 5 },
-        { id: 'i', type: 'iron', col: 4, row: 3 },
-        { id: 's', type: 'stone', col: 5, row: 3 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 3, row: 1 },
+        { id: 'i', type: 'iron', col: 5, row: 2 },
+        { id: 'b', type: 'barrel', col: 1, row: 4 }
       ],
       par: { three: 15, two: 21 }
     },
 
     {
-      id: 43,
+      id: 42,
       chapter: 5,
-      title: 'Two Crowns, Two Posts',
+      title: 'Every Crown Costs',
       teach: '',
-      idea: 'A post will hold a Queen as happily as an iron — and she is needed elsewhere.',
-      capacity: 4,
+      idea: 'A plate, a portcullis, a block and one key, for two people who both have ' +
+            'to get through all of it.',
+      capacity: 12,
       map: [
         '#######',
-        '#A...A#',
-        '#.###.#',
-        '#.....E',
-        '#.###.#',
-        '#..>..#',
+        '#.#2#.#',
+        '#.....#',
+        '#..d.LE',
+        '#.....#',
+        '#.#.#.#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 2 },
-        { id: 'q', type: 'queen', col: 3, row: 5 },
-        { id: 'i', type: 'iron', col: 5, row: 3 },
-        { id: 's', type: 'stone', col: 1, row: 5 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 1, row: 4 },
+        { id: 'y', type: 'key', col: 3, row: 5 },
+        { id: 'i', type: 'iron', col: 2, row: 4 }
       ],
-      par: { three: 19, two: 27 }
+      par: { three: 14, two: 20 }
+    },
+
+    {
+      id: 43,
+      chapter: 5,
+      title: 'After You',
+      teach: '',
+      idea: 'The floor holds for one of them. Decide early which one.',
+      capacity: 13,
+      map: [
+        '#######',
+        '#..#..#',
+        '#...x##',
+        '#.##..#',
+        '##x..##',
+        '#..#..E',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 2, row: 5 },
+        { id: 'i', type: 'iron', col: 2, row: 2 },
+        { id: 's', type: 'stone', col: 2, row: 1 }
+      ],
+      par: { three: 15, two: 21 }
     },
 
     {
       id: 44,
       chapter: 5,
-      title: 'Separate Roads',
+      title: 'The Long Slide',
       teach: '',
-      idea: 'One ledge runs east, the other west. They cannot both take the good road.',
+      idea: 'Set the lean and the ice delivers her. Getting him across is the hard ' +
+            'part.',
       capacity: 4,
       map: [
         '#######',
-        '#..>..#',
-        '#.###.#',
-        'o.....E',
-        '#.###.#',
-        '#..<..#',
+        'o....4#',
+        '#.#.#.#',
+        '#.~~~.#',
+        '#.#.#d#',
+        '#.....E',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 0, row: 3 },
-        { id: 'q', type: 'queen', col: 2, row: 1 },
-        { id: 'i', type: 'iron', col: 4, row: 1 },
-        { id: 's', type: 'stone', col: 5, row: 2 }
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'q', type: 'queen', col: 5, row: 2 },
+        { id: 'i', type: 'iron', col: 5, row: 3 },
+        { id: 's', type: 'stone', col: 1, row: 4 }
       ],
-      par: { three: 20, two: 28 }
+      par: { three: 16, two: 22 }
     },
 
     {
       id: 45,
       chapter: 5,
-      title: 'The Long Slide',
+      title: 'Separate Roads',
       teach: '',
-      idea: 'Set the lean, and the ice delivers her. Getting him across is the hard part.',
-      capacity: 5,
+      idea: 'Both ledges drop. Whoever goes down first is not coming back to help.',
+      capacity: 7,
       map: [
         '#######',
-        'o.....#',
-        '#.###.#',
-        '#.~~~.E',
-        '#.###.#',
         '#.....#',
+        '####v##',
+        '#.....#',
+        '##v####',
+        '#.....E',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 3, row: 5 },
-        { id: 'q', type: 'queen', col: 3, row: 1 },
-        { id: 'i', type: 'iron', col: 3, row: 3 },
-        { id: 's', type: 'stone', col: 4, row: 3 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 3, row: 5 },
+        { id: 'i', type: 'iron', col: 2, row: 1 },
+        { id: 's', type: 'stone', col: 5, row: 3 }
       ],
-      par: { three: 21, two: 29 }
+      par: { three: 17, two: 24 }
     },
 
     {
       id: 46,
       chapter: 5,
-      title: 'Every Crown Costs',
+      title: 'Two Crowns, One Frame',
       teach: '',
-      idea: 'Two posts, one plate, one gate, and two people who both have to get through it.',
-      capacity: 5,
+      idea: 'Whichever of them moves, the other one pays for it.',
+      capacity: 10,
       map: [
         '#######',
-        '#A.2.A#',
-        '#.###.#',
-        '#..d..E',
-        '#.###.#',
-        'o.....#',
+        '#2....#',
+        '#....##',
+        '##....#',
+        '#.....#',
+        '#....dE',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 3 },
-        { id: 'q', type: 'queen', col: 5, row: 4 },
-        { id: 'i', type: 'iron', col: 2, row: 5 },
-        { id: 's', type: 'stone', col: 5, row: 5 }
+        { id: 'k', type: 'king', col: 2, row: 1 },
+        { id: 'q', type: 'queen', col: 1, row: 5 },
+        { id: 'i', type: 'iron', col: 5, row: 4 },
+        { id: 'v', type: 'statue', col: 1, row: 4 }
       ],
-      par: { three: 22, two: 31 }
+      par: { three: 18, two: 25 }
     },
 
     {
       id: 47,
       chapter: 5,
-      title: 'Her Weight in Nothing',
+      title: 'One Trip, Two Crowns',
       teach: '',
-      idea: 'She can stand on the plate all day and it will not notice her.',
-      capacity: 6,
+      idea: 'The gate is in the north wall and the marble is already leaning that ' +
+            'way.',
+      capacity: 12,
       map: [
-        '#######',
-        '#..2..#',
-        '#.#####',
-        '#..d..E',
-        '#.#####',
+        '###E###',
+        '#..L..#',
+        '#.###.#',
         '#.....#',
+        '#.###.#',
+        '#o....#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 2, row: 1 },
-        { id: 'q', type: 'queen', col: 4, row: 3 },
-        { id: 'i', type: 'iron', col: 2, row: 3 },
-        { id: 'b', type: 'barrel', col: 3, row: 3 }
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'q', type: 'queen', col: 3, row: 5 },
+        { id: 'y', type: 'key', col: 1, row: 2 },
+        { id: 'm', type: 'marble', col: 1, row: 1, w: 2 }
       ],
-      par: { three: 26, two: 36 }
+      par: { three: 19, two: 27 }
     },
 
     {
       id: 48,
       chapter: 5,
-      title: 'After You',
+      title: 'Her Weight in Nothing',
       teach: '',
-      idea: 'The bridge holds for one of them. Work out which, and what the other one does instead.',
-      capacity: 7,
+      idea: 'The plate will not notice her standing on it, and the iron is wanted ' +
+            'elsewhere.',
+      capacity: 4,
       map: [
         '#######',
-        '#.xx..#',
-        '#.#####',
-        '#.....E',
-        '#.#####',
+        '#4#.#o#',
+        '#.#.#.#',
         '#.....#',
+        '#..d..#',
+        '#..#..E',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 2, row: 1 },
-        { id: 'q', type: 'queen', col: 1, row: 3 },
-        { id: 'i', type: 'iron', col: 4, row: 3 },
-        { id: 's', type: 'stone', col: 1, row: 4 }
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'q', type: 'queen', col: 1, row: 4 },
+        { id: 'i', type: 'iron', col: 5, row: 1 },
+        { id: 'b', type: 'barrel', col: 1, row: 2 }
       ],
-      par: { three: 26, two: 36 }
+      par: { three: 20, two: 28 }
     },
 
     {
       id: 49,
       chapter: 5,
-      title: 'One Trip, Two Crowns',
+      title: 'Up the Shaft',
       teach: '',
-      idea: 'Whatever goes up to that plate is never coming back, and it has to be heavy.',
-      capacity: 8,
+      idea: 'One key between them, and only one of them can be carrying it.',
+      capacity: 5,
       map: [
         '#######',
-        '#.>..4#',
-        '#.#####',
-        '#..d..E',
-        '#.#####',
-        '#.....#',
+        '#..#..#',
+        '#..#..#',
+        '#..#..#',
+        '#..L..#',
+        '#..E..#',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 3, row: 5 },
-        { id: 'q', type: 'queen', col: 5, row: 3 },
-        { id: 'i', type: 'iron', col: 4, row: 5 },
-        { id: 's', type: 'stone', col: 3, row: 3 }
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 1, row: 4 },
+        { id: 'y', type: 'key', col: 4, row: 1 },
+        { id: 'i', type: 'iron', col: 5, row: 3 }
       ],
-      par: { three: 26, two: 36 }
+      par: { three: 21, two: 29 }
     },
 
     {
@@ -1238,20 +1259,20 @@
       capacity: 10,
       map: [
         '#######',
-        'oA.x.A#',
+        '#.....#',
         '#.###.#',
-        '#..d..E',
-        '#.###.#',
-        '#..2>.#',
+        '#2#.#L#',
+        '#.#.#d#',
+        '#...#.E',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 0, row: 1 },
-        { id: 'q', type: 'queen', col: 5, row: 3 },
-        { id: 'i', type: 'iron', col: 5, row: 4 },
-        { id: 's', type: 'stone', col: 1, row: 2 }
+        { id: 'k', type: 'king', col: 5, row: 2 },
+        { id: 'q', type: 'queen', col: 2, row: 5 },
+        { id: 'y', type: 'key', col: 1, row: 5 },
+        { id: 'i', type: 'iron', col: 3, row: 5 }
       ],
-      par: { three: 27, two: 38 }
+      par: { three: 32, two: 45 }
     }
   ];
 
@@ -1260,7 +1281,7 @@
     { n: 1, title: 'The Quiet Kingdom', note: 'Weight, distance, and a board that answers' },
     { n: 2, title: 'Loose Ground',      note: 'Floors that slide, crumble, and only go one way' },
     { n: 3, title: 'The Locked Halls',  note: 'Gates that want paying for' },
-    { n: 4, title: 'The Shifting Post', note: 'The frame no longer hangs where it used to' },
+    { n: 4, title: 'The Brass Keys',    note: 'Blocks that only a royal hand can open' },
     { n: 5, title: "The Queen's Road",  note: 'Two crowns, one frame, one gate' }
   ];
 

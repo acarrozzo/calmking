@@ -7,7 +7,7 @@ weight, and every weight pulls on the frame according to how far it sits from
 the centre. Move anything and the whole kingdom leans. Lean too far and it goes
 over.
 
-Later on the centre stops being the centre, and the King stops travelling alone.
+Later on the road starts asking to be unlocked, and the King stops travelling alone.
 
 ## Running it
 
@@ -42,11 +42,13 @@ python3 -m http.server 8000     # or serve it, if you prefer
 - **Pressure plates** are stamped with the weight they need. While every plate
   on the board is loaded, every **portcullis** is up. A gate only has to be up
   at the moment you step under it.
-- **Pivot pins** (the carved sockets) move the fulcrum. While exactly one pin
-  is loaded, the whole frame hangs from that column instead of its own post —
-  so every weight on the board is suddenly worth something different. Load two
-  pins at once and the frame has nothing to choose between them, and swings
-  back to its default post. Nothing on any pin does the same.
+- **Locked blocks** are walls with one answer. A **key** lies somewhere on the
+  floor, weighing 1, and nothing on the board can shift it except the King or
+  the Queen — walk one of them onto it and they pick it up. From then on the
+  key rides with them, so its weight hangs off whichever column they are
+  standing in. Walk into a locked block carrying one and the key is spent: the
+  block becomes plain floor for good, the weight leaves the board, and they
+  step through. A royal shoved into a block opens nothing.
 - **The Queen** weighs 1, against the King's 2. She travels almost free and can
   hold almost nothing down. Both royals have to be standing at the gate before
   it counts, and the gate holds them both. Strand either one and the level ends.
@@ -171,39 +173,45 @@ the three-crown target.
 | XXIX | Every Door Costs | 12 | A crumbling bridge east, a ledge west, a gate in between |
 | XXX | The Whole Kingdom | 28 | Everything, in one room, with nothing to spare |
 
-**IV · The Shifting Post** — the frame no longer hangs where it used to
+**IV · The Brass Keys** — blocks that only a royal hand can open
 
-Every level here is unsolvable with its pins paved over: the fulcrum has to
-move, because the counterweight is stranded somewhere it can never come back
-from.
+Every level here turns on a detour. The key is never on the way, nobody else
+can go and get it, and it is heavier on the walk back than it looks. The rooms
+stop being corridors here: a staircase, a comb, a spiral, a funnel, a cross
+with the gate up one arm, and a gate that opens on the wrong side of the board.
 
 | | Level | | Idea |
 |---|---|---|---|
-| XXXI | The Frame Re-Hung | 6 | Walk to the gate and it tips; move the post and it is free |
-| XXXII | The Wrong Side of the Ledge | 12 | The iron is stranded east; move the post, not the weight |
-| XXXIII | The Rolling Post | 11 | Move the post and the marble decides to roll |
-| XXXIV | Grip | 11 | The same ice is walkable or fatal depending on the post |
-| XXXV | One Crossing | 14 | The bridge holds once; have the post ready first |
-| XXXVI | Both Posts | 14 | The only way back to the middle is to hold both at once |
-| XXXVII | Two Posts, One Piece | 14 | Both posts want holding; one piece can hold either |
-| XXXVIII | A Post at the Gate | 11 | The post is the last tile before the gate |
-| XXXIX | Back to the Middle | 15 | Already balanced; everything you do breaks it |
-| XL | The Third Trial | 13 | The King is the post — someone must relieve him |
+| XXXI | The Key and the Block | 10 | The key is behind you and the gate is in front |
+| XXXII | The Gate Behind You | 12 | Home is west; everything you know about leaning is backwards |
+| XXXIII | The Four Arms | 14 | The gate is up the north arm, the weight is out on the others |
+| XXXIV | Winding In | 15 | The road curls inward, over a plank good for one crossing |
+| XXXV | Two Shores | 16 | The key is on the wrong shore and the bridge is the block |
+| XXXVI | The Neck | 16 | The room narrows to one cold tile, and you come back heavier |
+| XXXVII | Among the Pillars | 18 | Two cradles, one marble, and a block that wants your hands full |
+| XXXVIII | Down the Stair | 20 | Every step down the stair is a step further out |
+| XXXIX | Between the Teeth | 20 | Whatever you leave standing in a tooth is staying there |
+| XL | The Third Trial | 21 | A plate, a portcullis and a block, down shafts that never line up |
 
 **V · The Queen's Road** — two crowns, one frame, one gate
 
+Both royals have to be standing in the gate together. She weighs half what he
+does, which makes her cheap to move and useless as a counterweight. The rooms
+keep changing shape: a moat, a cave, a ladder of ice, a zigzag of one-way
+ledges, four corner rooms, a gate in the north wall, and an inner keep.
+
 | | Level | | Idea |
 |---|---|---|---|
-| XLI | The Queen | 9 | The gate holds them both, and wants both |
-| XLII | Two Crowns, One Frame | 15 | Whichever of them moves, the other pays for it |
-| XLIII | Two Crowns, Two Posts | 19 | A post holds a Queen as happily as an iron |
-| XLIV | Separate Roads | 20 | They cannot both take the good road |
-| XLV | The Long Slide | 21 | The ice delivers her; he is the hard part |
-| XLVI | Every Crown Costs | 22 | Two posts, one plate, one gate, two people |
-| XLVII | Her Weight in Nothing | 26 | The plate will not notice her standing on it |
-| XLVIII | After You | 26 | The bridge holds for one of them |
-| XLIX | One Trip, Two Crowns | 26 | What goes to that plate is never coming back |
-| L | The Calm King | 27 | Everything, and two crowns to bring home through it |
+| XLI | The Queen | 15 | The gate holds them both, and wants both |
+| XLII | Every Crown Costs | 14 | A plate, a portcullis, a block and one key, for two |
+| XLIII | After You | 15 | The floor holds for one of them; decide early which |
+| XLIV | The Long Slide | 16 | The ice delivers her; he is the hard part |
+| XLV | Separate Roads | 17 | Both ledges drop, and neither comes back to help |
+| XLVI | Two Crowns, One Frame | 18 | Whichever of them moves, the other one pays |
+| XLVII | One Trip, Two Crowns | 19 | The gate is in the north wall and the marble leans that way |
+| XLVIII | Her Weight in Nothing | 20 | The plate will not notice her standing on it |
+| XLIX | Up the Shaft | 21 | One key between them, and only one can be carrying it |
+| L | The Calm King | 32 | Everything the kingdom has, and two crowns to bring through it |
 
 ## Accessibility
 

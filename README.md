@@ -175,23 +175,27 @@ the three-crown target.
 
 **IV · The Brass Keys** — blocks that only a royal hand can open
 
-Every level here turns on a detour. The key is never on the way, nobody else
-can go and get it, and it is heavier on the walk back than it looks. The rooms
-stop being corridors here: a staircase, a comb, a spiral, a funnel, a cross
-with the gate up one arm, and a gate that opens on the wrong side of the board.
+Every level here turns on a detour: the key is never on the way, and nobody
+else can go and fetch it. The rooms are wide and busy — four pieces to shift
+rather than two — so the work is holding the whole board in your head at once.
 
 | | Level | | Idea |
 |---|---|---|---|
 | XXXI | The Key and the Block | 10 | The key is behind you and the gate is in front |
-| XXXII | The Gate Behind You | 12 | Home is west; everything you know about leaning is backwards |
-| XXXIII | The Four Arms | 14 | The gate is up the north arm, the weight is out on the others |
-| XXXIV | Winding In | 15 | The road curls inward, over a plank good for one crossing |
-| XXXV | Two Shores | 16 | The key is on the wrong shore and the bridge is the block |
-| XXXVI | The Neck | 16 | The room narrows to one cold tile, and you come back heavier |
-| XXXVII | Among the Pillars | 18 | Two cradles, one marble, and a block that wants your hands full |
-| XXXVIII | Down the Stair | 20 | Every step down the stair is a step further out |
-| XXXIX | Between the Teeth | 20 | Whatever you leave standing in a tooth is staying there |
-| XL | The Third Trial | 21 | A plate, a portcullis and a block, down shafts that never line up |
+| XXXII | The Wide Mouth | 11 | It opens as it falls away south, and everything rolls that way |
+| XXXIII | The Gate Behind You | 11 | Home is west; everything you know about leaning is backwards |
+| XXXIV | The Narrows | 12 | Two broad halls, one pinched waist, four things to shift |
+| XXXV | The Neck | 14 | The room narrows to one cold tile, and you come back heavier |
+| XXXVI | Among the Pillars | 14 | Two cradles, one marble, and a block that wants your hands full |
+| XXXVII | The Four Arms | 15 | The gate is up the north arm, the weight is out on the others |
+| XXXVIII | Two Shores | 19 | The key is on the wrong shore and the bridge is the block |
+| XXXIX | Between the Teeth | 21 | Whatever you leave standing in a tooth is staying there |
+| XL | The Third Trial | 16 | A plate, a portcullis and a block, down shafts that never line up |
+
+The move counts stop climbing here, and that is deliberate. A room with four
+pieces in it is wider rather than longer: there is more to work out and fewer
+moves to spend once you have. Level XL has exactly one best line through it and
+some seven thousand slower ways to reach the same gate.
 
 **V · The Queen's Road** — two crowns, one frame, one gate
 
@@ -211,7 +215,7 @@ ledges, four corner rooms, a gate in the north wall, and an inner keep.
 | XLVII | One Trip, Two Crowns | 19 | The gate is in the north wall and the marble leans that way |
 | XLVIII | Her Weight in Nothing | 20 | The plate will not notice her standing on it |
 | XLIX | Up the Shaft | 21 | One key between them, and only one can be carrying it |
-| L | The Calm King | 32 | Everything the kingdom has, and two crowns to bring through it |
+| L | The Calm King | 13 | Everything the kingdom has, in the widest room it has |
 
 ## Accessibility
 

@@ -788,13 +788,40 @@
     {
       id: 32,
       chapter: 4,
-      title: 'The Gate Behind You',
+      title: 'The Wide Mouth',
       teach: 'Only the King and Queen can lift a key. Nothing else on the board will ' +
              'even nudge it.',
       teachUntil: 'key',
+      idea: 'It opens as it falls away south, and everything you own rolls that way ' +
+            'with it.',
+      capacity: 7,
+      map: [
+        '###.###',
+        '##...##',
+        '##...##',
+        '#..L..#',
+        '#.....#',
+        '......E',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 3, row: 0 },
+        { id: 'y', type: 'key', col: 5, row: 4 },
+        { id: 'i', type: 'iron', col: 4, row: 3 },
+        { id: 's', type: 'stone', col: 3, row: 2 },
+        { id: 'b', type: 'barrel', col: 2, row: 2 }
+      ],
+      par: { three: 11, two: 15 }
+    },
+
+    {
+      id: 33,
+      chapter: 4,
+      title: 'The Gate Behind You',
+      teach: '',
       idea: 'Home is west now. Everything the kingdom taught you about leaning is ' +
             'backwards.',
-      capacity: 13,
+      capacity: 12,
       map: [
         '#######',
         '#.#.#.#',
@@ -806,99 +833,49 @@
       ],
       pieces: [
         { id: 'k', type: 'king', col: 5, row: 3 },
-        { id: 'y', type: 'key', col: 3, row: 1 },
-        { id: 'i', type: 'iron', col: 1, row: 1 },
-        { id: 'v', type: 'statue', col: 1, row: 5 }
+        { id: 'y', type: 'key', col: 1, row: 5 },
+        { id: 'i', type: 'iron', col: 1, row: 2 },
+        { id: 's', type: 'stone', col: 2, row: 4 },
+        { id: 'b', type: 'barrel', col: 3, row: 5 }
       ],
-      par: { three: 12, two: 17 }
-    },
-
-    {
-      id: 33,
-      chapter: 4,
-      title: 'The Four Arms',
-      teach: '',
-      idea: 'The gate is up the north arm. The weight that gets you there lives out ' +
-            'on the others.',
-      capacity: 4,
-      map: [
-        '###E###',
-        '###L###',
-        '#.....#',
-        '.......',
-        '#.....#',
-        '###.###',
-        '###.###'
-      ],
-      pieces: [
-        { id: 'k', type: 'king', col: 0, row: 3 },
-        { id: 'y', type: 'key', col: 5, row: 4 },
-        { id: 'i', type: 'iron', col: 4, row: 2 },
-        { id: 'b', type: 'barrel', col: 3, row: 4 }
-      ],
-      par: { three: 14, two: 20 }
+      par: { three: 11, two: 15 }
     },
 
     {
       id: 34,
       chapter: 4,
-      title: 'Winding In',
+      title: 'The Narrows',
       teach: '',
-      idea: 'The road curls inward, and the plank on the way is good for one ' +
-            'crossing.',
-      capacity: 5,
+      idea: 'Two broad halls and one pinched waist between them, with four things to ' +
+            'shift and only one pair of hands.',
+      capacity: 12,
       map: [
         '#######',
         '#.....#',
-        '#.###.#',
-        '#.#E#.#',
-        '#.#L#.#',
-        '#x..#.#',
+        '#.....#',
+        '##.L.##',
+        '#.....#',
+        '#.....E',
         '#######'
       ],
       pieces: [
         { id: 'k', type: 'king', col: 1, row: 1 },
-        { id: 'y', type: 'key', col: 2, row: 1 },
-        { id: 'i', type: 'iron', col: 5, row: 5 },
-        { id: 's', type: 'stone', col: 3, row: 1 }
+        { id: 'y', type: 'key', col: 3, row: 1 },
+        { id: 'i', type: 'iron', col: 5, row: 2 },
+        { id: 's', type: 'stone', col: 5, row: 5 },
+        { id: 'b', type: 'barrel', col: 4, row: 4 }
       ],
-      par: { three: 15, two: 21 }
+      par: { three: 12, two: 17 }
     },
 
     {
       id: 35,
       chapter: 4,
-      title: 'Two Shores',
-      teach: '',
-      idea: 'The key is on the wrong shore, and the only bridge runs through the ' +
-            'block.',
-      capacity: 6,
-      map: [
-        '#######',
-        '#..#..#',
-        '#..#..#',
-        '#..L..E',
-        '#..#..#',
-        '#..#..#',
-        '#######'
-      ],
-      pieces: [
-        { id: 'k', type: 'king', col: 1, row: 1 },
-        { id: 'y', type: 'key', col: 1, row: 5 },
-        { id: 'i', type: 'iron', col: 5, row: 2 },
-        { id: 'b', type: 'barrel', col: 1, row: 3 }
-      ],
-      par: { three: 16, two: 22 }
-    },
-
-    {
-      id: 36,
-      chapter: 4,
       title: 'The Neck',
       teach: '',
       idea: 'The room narrows to one cold tile, and you come back heavier than you ' +
             'went.',
-      capacity: 4,
+      capacity: 10,
       map: [
         '#######',
         '#.....#',
@@ -910,20 +887,21 @@
       ],
       pieces: [
         { id: 'k', type: 'king', col: 1, row: 1 },
-        { id: 'y', type: 'key', col: 4, row: 3 },
-        { id: 'i', type: 'iron', col: 3, row: 5 },
-        { id: 'm', type: 'marble', col: 4, row: 1, w: 2 }
+        { id: 'y', type: 'key', col: 5, row: 1 },
+        { id: 'i', type: 'iron', col: 5, row: 2 },
+        { id: 'm', type: 'marble', col: 3, row: 3, w: 2 },
+        { id: 'b', type: 'barrel', col: 4, row: 3 }
       ],
-      par: { three: 16, two: 22 }
+      par: { three: 14, two: 20 }
     },
 
     {
-      id: 37,
+      id: 36,
       chapter: 4,
       title: 'Among the Pillars',
       teach: '',
       idea: 'Two cradles, one marble, and a block that wants your hands full.',
-      capacity: 6,
+      capacity: 12,
       map: [
         '#######',
         '#....o#',
@@ -935,36 +913,66 @@
       ],
       pieces: [
         { id: 'k', type: 'king', col: 1, row: 1 },
-        { id: 'y', type: 'key', col: 5, row: 5 },
-        { id: 'i', type: 'iron', col: 3, row: 4 },
+        { id: 'y', type: 'key', col: 5, row: 4 },
+        { id: 'i', type: 'iron', col: 1, row: 2 },
+        { id: 'm', type: 'marble', col: 3, row: 5, w: 2 },
+        { id: 's', type: 'stone', col: 4, row: 5 }
+      ],
+      par: { three: 14, two: 20 }
+    },
+
+    {
+      id: 37,
+      chapter: 4,
+      title: 'The Four Arms',
+      teach: '',
+      idea: 'The gate is up the north arm. The weight that gets you there lives out ' +
+            'on the others.',
+      capacity: 12,
+      map: [
+        '###E###',
+        '###L###',
+        '#.....#',
+        '.......',
+        '#.....#',
+        '###.###',
+        '###.###'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 0, row: 3 },
+        { id: 'y', type: 'key', col: 6, row: 3 },
+        { id: 'i', type: 'iron', col: 4, row: 4 },
+        { id: 's', type: 'stone', col: 5, row: 2 },
         { id: 'm', type: 'marble', col: 5, row: 4, w: 2 }
       ],
-      par: { three: 18, two: 25 }
+      par: { three: 15, two: 21 }
     },
 
     {
       id: 38,
       chapter: 4,
-      title: 'Down the Stair',
+      title: 'Two Shores',
       teach: '',
-      idea: 'Every step down the stair is a step further out from the post.',
-      capacity: 12,
+      idea: 'The key is on the wrong shore, and the only bridge runs through the ' +
+            'block.',
+      capacity: 10,
       map: [
         '#######',
-        '#..####',
-        '#..####',
-        '##.L###',
-        '###..##',
-        '####..E',
+        '#..#..#',
+        '#..#..#',
+        '#..L..E',
+        '#..#..#',
+        '#..#..#',
         '#######'
       ],
       pieces: [
         { id: 'k', type: 'king', col: 1, row: 1 },
-        { id: 'y', type: 'key', col: 2, row: 1 },
-        { id: 'i', type: 'iron', col: 3, row: 4 },
-        { id: 'b', type: 'barrel', col: 1, row: 2 }
+        { id: 'y', type: 'key', col: 2, row: 5 },
+        { id: 'i', type: 'iron', col: 5, row: 5 },
+        { id: 's', type: 'stone', col: 4, row: 4 },
+        { id: 'b', type: 'barrel', col: 5, row: 4 }
       ],
-      par: { three: 20, two: 28 }
+      par: { three: 19, two: 27 }
     },
 
     {
@@ -973,7 +981,7 @@
       title: 'Between the Teeth',
       teach: '',
       idea: 'Three deep teeth. Whatever you leave standing in one is staying there.',
-      capacity: 6,
+      capacity: 10,
       map: [
         '#######',
         '#..L..#',
@@ -985,11 +993,12 @@
       ],
       pieces: [
         { id: 'k', type: 'king', col: 1, row: 1 },
-        { id: 'y', type: 'key', col: 1, row: 5 },
-        { id: 'i', type: 'iron', col: 4, row: 1 },
-        { id: 's', type: 'stone', col: 3, row: 5 }
+        { id: 'y', type: 'key', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 5, row: 4 },
+        { id: 's', type: 'stone', col: 3, row: 3 },
+        { id: 'b', type: 'barrel', col: 5, row: 3 }
       ],
-      par: { three: 20, two: 28 }
+      par: { three: 21, two: 29 }
     },
 
     {
@@ -998,7 +1007,7 @@
       title: 'The Third Trial',
       teach: '',
       idea: 'A plate, a portcullis and a block, down three shafts that never line up.',
-      capacity: 9,
+      capacity: 18,
       map: [
         '#######',
         '#2#...#',
@@ -1009,13 +1018,15 @@
         '#...#.E'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 1, row: 1 },
-        { id: 'y', type: 'key', col: 4, row: 1 },
-        { id: 'i', type: 'iron', col: 1, row: 6 },
-        { id: 's', type: 'stone', col: 5, row: 6 }
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'y', type: 'key', col: 1, row: 6 },
+        { id: 'i', type: 'iron', col: 1, row: 4 },
+        { id: 's', type: 'stone', col: 3, row: 4 },
+        { id: 'b', type: 'barrel', col: 4, row: 4 }
       ],
-      par: { three: 21, two: 29 }
-    },
+      par: { three: 16, two: 22 }
+    }
+,
 
     /* --------------------------------------- chapter V: the Queen's road */
 
@@ -1255,24 +1266,26 @@
       chapter: 5,
       title: 'The Calm King',
       teach: '',
-      idea: 'Everything the kingdom has, and two crowns to bring home through it.',
-      capacity: 10,
+      idea: 'Everything the kingdom has, in the widest room it has, and two crowns to ' +
+            'bring home through it.',
+      capacity: 8,
       map: [
         '#######',
+        '#o....#',
+        '#.~...#',
+        '#..#.LE',
+        '#.~...#',
         '#.....#',
-        '#.###.#',
-        '#2#.#L#',
-        '#.#.#d#',
-        '#...#.E',
         '#######'
       ],
       pieces: [
-        { id: 'k', type: 'king', col: 5, row: 2 },
-        { id: 'q', type: 'queen', col: 2, row: 5 },
-        { id: 'y', type: 'key', col: 1, row: 5 },
-        { id: 'i', type: 'iron', col: 3, row: 5 }
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'q', type: 'queen', col: 1, row: 1 },
+        { id: 'y', type: 'key', col: 2, row: 1 },
+        { id: 'i', type: 'iron', col: 3, row: 1 },
+        { id: 'b', type: 'barrel', col: 4, row: 1 }
       ],
-      par: { three: 32, two: 45 }
+      par: { three: 13, two: 18 }
     }
   ];
 

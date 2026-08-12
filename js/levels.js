@@ -1286,16 +1286,647 @@
         { id: 'b', type: 'barrel', col: 4, row: 1 }
       ],
       par: { three: 13, two: 18 }
+    },
+
+    /* ---- VI. The Counterweight -------------------------------------- */
+
+    {
+      id: 51,
+      chapter: 6,
+      title: 'The Long Counter',
+      teach: '',
+      idea: 'Before the King can travel east, the Iron has to travel west.',
+      capacity: 7,
+      map: [
+        '#######',
+        '#.....#',
+        '#.###.#',
+        '#.....E',
+        '#.###.#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 5, row: 1 }
+      ],
+      par: { three: 7, two: 10 }
+    },
+
+    {
+      id: 52,
+      chapter: 6,
+      title: 'The Tempting Road',
+      teach: '',
+      idea: 'The obvious road works almost long enough.',
+      capacity: 8,
+      map: [
+        '#######',
+        '#.....#',
+        '#.###.#',
+        '#.....E',
+        '#.###.#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 's', type: 'stone', col: 5, row: 5 },
+        { id: 'b', type: 'barrel', col: 4, row: 1 }
+      ],
+      par: { three: 7, two: 10 }
+    },
+
+    {
+      id: 53,
+      chapter: 6,
+      title: 'The Reversal',
+      teach: '',
+      idea: 'The road changes direction, so the answer has to change with it.',
+      capacity: 8,
+      map: [
+        '#.....#',
+        'E.#####',
+        '#.#####',
+        '#.....#',
+        '#####.#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'i', type: 'iron', col: 5, row: 0 }
+      ],
+      par: { three: 15, two: 21 }
+    },
+
+    {
+      id: 54,
+      chapter: 6,
+      title: 'Lockstep',
+      teach: '',
+      idea: 'Neither of them gets very far without the other.',
+      capacity: 5,
+      map: [
+        '#######',
+        '#.....#',
+        '#######',
+        '#.....E',
+        '#######',
+        '#######',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 4, row: 1 }
+      ],
+      par: { three: 7, two: 10 }
+    },
+
+    {
+      id: 55,
+      chapter: 6,
+      title: 'Light at the Rim',
+      teach: '',
+      idea: 'The heavier piece has less room to matter.',
+      capacity: 7,
+      map: [
+        '#######',
+        '###...#',
+        '#######',
+        '#.....E',
+        '#######',
+        '.......',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 's', type: 'stone', col: 4, row: 1 },
+        { id: 'b', type: 'barrel', col: 5, row: 5 }
+      ],
+      par: { three: 8, two: 11 }
+    },
+
+    {
+      id: 56,
+      chapter: 6,
+      title: 'The Push Train',
+      teach: '',
+      idea: 'One shove moves six weights worth of leverage at once.',
+      capacity: 11,
+      map: [
+        '#######',
+        '#.....#',
+        '#######',
+        '#.....E',
+        '#######',
+        '#######',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 's', type: 'stone', col: 4, row: 1 },
+        { id: 'i', type: 'iron', col: 5, row: 1 }
+      ],
+      par: { three: 6, two: 8 }
+    },
+
+    {
+      id: 57,
+      chapter: 6,
+      title: 'No Return',
+      teach: '',
+      idea: 'Once the Iron goes west, that decision belongs to the rest of the level.',
+      capacity: 7,
+      map: [
+        '#######',
+        '#.<...#',
+        '#######',
+        '#.....E',
+        '#######',
+        '#######',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 5, row: 1 }
+      ],
+      par: { three: 7, two: 10 }
+    },
+
+    {
+      id: 58,
+      chapter: 6,
+      title: 'The Open Court',
+      teach: '',
+      idea: 'A deliberately loose board for comparison.',
+      capacity: 12,
+      map: [
+        '#######',
+        '#.....#',
+        '#.....#',
+        '#.....E',
+        '#.....#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 5, row: 1 },
+        { id: 's', type: 'stone', col: 5, row: 5 },
+        { id: 'b', type: 'barrel', col: 3, row: 2 }
+      ],
+      par: { three: 7, two: 10 }
+    },
+
+    {
+      id: 59,
+      chapter: 6,
+      title: 'The Heavy Return',
+      teach: '',
+      idea: 'The King comes back heavier than he left.',
+      capacity: 9,
+      map: [
+        '#######',
+        '#.....#',
+        '#######',
+        '#....LE',
+        '#######',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 3, row: 3 },
+        { id: 'y', type: 'key', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 5, row: 1 },
+        { id: 's', type: 'stone', col: 1, row: 5 }
+      ],
+      par: { three: 8, two: 11 }
+    },
+
+    {
+      id: 60,
+      chapter: 6,
+      title: 'The Long Thought',
+      teach: '',
+      idea: 'The road doubles back, and two weights have to trade jobs.',
+      capacity: 6,
+      map: [
+        '###...#',
+        'E.#####',
+        '#.#####',
+        '#.....#',
+        '#####.#',
+        '#.....#',
+        '#.....#'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'i', type: 'iron', col: 4, row: 0 },
+        { id: 's', type: 'stone', col: 4, row: 6 }
+      ],
+      par: { three: 16, two: 22 }
+    },
+
+    /* Experimental batch II. IDs 51-60 lived in the playtest branch; keep
+     * these numbers stable so notes from that batch still line up. */
+    {
+      id: 61,
+      chapter: 6,
+      title: 'The Wrong Lock',
+      teach: '',
+      idea: 'Two tempting locks, one key. Opening the nearer route spends the only ' +
+            'answer to the block that actually guards home.',
+      capacity: 18,
+      map: [
+        '###E###',
+        '###L###',
+        '#...L.#',
+        '#.###.#',
+        '#.....#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 2 },
+        { id: 'y', type: 'key', col: 5, row: 5 }
+      ],
+      par: { three: 18, two: 25 }
+    },
+
+    {
+      id: 62,
+      chapter: 6,
+      title: 'Keep the Bridge Busy',
+      teach: '',
+      idea: 'The two crowns start in rooms that only meet on the far side. Each gets ' +
+            'one fragile bridge, and each bridge has a piece blocking its mouth.',
+      capacity: 20,
+      map: [
+        '#######',
+        '#..#..#',
+        '#..x..#',
+        '#####.#',
+        '#..x..#',
+        '#..#..E',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 1, row: 5 },
+        { id: 's', type: 'stone', col: 2, row: 2 },
+        { id: 'b', type: 'barrel', col: 2, row: 4 }
+      ],
+      par: { three: 16, two: 22 }
+    },
+
+    {
+      id: 63,
+      chapter: 6,
+      title: 'Cold Delivery',
+      teach: '',
+      idea: 'One nudge sends Iron down the ice onto the plate. That opens the door, but ' +
+            'its eastward weight makes the King bargain with the stone for every step.',
+      capacity: 10,
+      map: [
+        '#######',
+        '#o~~~4#',
+        '#######',
+        '#..d..E',
+        '#######',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 3, row: 1 },
+        { id: 's', type: 'stone', col: 5, row: 5 }
+      ],
+      par: { three: 12, two: 17 }
+    },
+
+    {
+      id: 64,
+      chapter: 6,
+      title: 'Leave the Post',
+      teach: '',
+      idea: 'Iron must go east to raise the portcullis, then reverse while the King is ' +
+            'inside it so the final eastward walk remains possible.',
+      capacity: 7,
+      map: [
+        '#######',
+        '#....4#',
+        '#.###.#',
+        '#.d...E',
+        '#.###.#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 3, row: 1 },
+        { id: 's', type: 'stone', col: 2, row: 5 }
+      ],
+      par: { three: 9, two: 13 }
+    },
+
+    {
+      id: 65,
+      chapter: 6,
+      title: 'Spend the Crossing',
+      teach: '',
+      idea: 'A one-way drop and a fragile return route divide the useful pieces into ' +
+            'jobs; the order decides which side still has what it needs.',
+      capacity: 18,
+      map: [
+        '#######',
+        '#.....#',
+        '###v###',
+        '#.....#',
+        '###x###',
+        '#.....E',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 5, row: 1 },
+        { id: 'i', type: 'iron', col: 3, row: 3 },
+        { id: 's', type: 'stone', col: 2, row: 5 }
+      ],
+      par: { three: 14, two: 20 }
+    },
+
+    {
+      id: 66,
+      chapter: 6,
+      title: 'Back Through the Block',
+      teach: '',
+      idea: 'One crown commits east through the ledge, takes the key, and must open the ' +
+            'block while travelling away from home before both crowns reverse course.',
+      capacity: 20,
+      map: [
+        '#######',
+        '#..>..#',
+        '#..#..#',
+        '#..L.E#',
+        '#..#..#',
+        '#..#..#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'q', type: 'queen', col: 2, row: 5 },
+        { id: 'y', type: 'key', col: 4, row: 1 },
+        { id: 's', type: 'stone', col: 2, row: 3 }
+      ],
+      par: { three: 14, two: 20 }
+    },
+
+    /* ---- VII. The Proving Ground ------------------------------------ */
+
+    {
+      id: 67,
+      chapter: 7,
+      title: 'Lower the Freight',
+      teach: '',
+      idea: 'The King delivers Iron through two consumable crossings. The Queen must go ' +
+            'home before Iron can step onto the plate without tipping the frame.',
+      capacity: 3,
+      map: [
+        '#######',
+        '###.###',
+        '###x###',
+        '###.###',
+        '###v###',
+        '#.4.dE#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 3, row: 1 },
+        { id: 'q', type: 'queen', col: 4, row: 5 },
+        { id: 'i', type: 'iron', col: 3, row: 2 }
+      ],
+      par: { three: 8, two: 11 }
+    },
+
+    {
+      id: 68,
+      chapter: 7,
+      title: 'The Loaded Key',
+      teach: '',
+      idea: 'After taking the key, the King pushes a two-piece train west so Iron and ' +
+            'Stone load both plates together; the same key opens the final block.',
+      capacity: 20,
+      map: [
+        '###E###',
+        '###L###',
+        '#.....#',
+        '###d###',
+        '#.....#',
+        '#42...#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 4 },
+        { id: 'y', type: 'key', col: 5, row: 5 },
+        { id: 'i', type: 'iron', col: 3, row: 5 },
+        { id: 's', type: 'stone', col: 4, row: 5 }
+      ],
+      par: { three: 12, two: 17 }
+    },
+
+    {
+      id: 69,
+      chapter: 7,
+      title: 'One Crown Above',
+      teach: '',
+      idea: 'The upper bridge survives one crown. That crown returns through the lock ' +
+            'with the key so the other can cross by the only road still standing.',
+      capacity: 20,
+      map: [
+        '#######',
+        '#..>x.#',
+        '#####.#',
+        '#..L.E#',
+        '#..#..#',
+        '#..#..#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 1 },
+        { id: 'q', type: 'queen', col: 1, row: 5 },
+        { id: 'y', type: 'key', col: 5, row: 1 }
+      ],
+      par: { three: 14, two: 20 }
+    },
+
+    {
+      id: 70,
+      chapter: 7,
+      title: 'Open, Then Undo',
+      teach: '',
+      idea: 'Stone first makes room for Iron to open the door. Once the King is inside, ' +
+            'Iron must abandon its plate and travel west for the finish.',
+      capacity: 8,
+      map: [
+        '#######',
+        '#....4#',
+        '#######',
+        '#.d...E',
+        '#######',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 3, row: 1 },
+        { id: 's', type: 'stone', col: 5, row: 5 }
+      ],
+      par: { three: 11, two: 15 }
+    },
+
+    {
+      id: 71,
+      chapter: 7,
+      title: 'Heavier Coming Home',
+      teach: '',
+      idea: 'Stone must move east before the key is taken; on the heavier return, Iron ' +
+            'has to make two separate westward corrections before the gate.',
+      capacity: 3,
+      map: [
+        '#######',
+        '#.....#',
+        '#######',
+        '#...L.E',
+        '#######',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 3, row: 3 },
+        { id: 'y', type: 'key', col: 1, row: 3 },
+        { id: 'i', type: 'iron', col: 4, row: 1 },
+        { id: 's', type: 'stone', col: 2, row: 5 }
+      ],
+      par: { three: 11, two: 15 }
+    },
+
+    {
+      id: 72,
+      chapter: 7,
+      title: 'Opposite Hands',
+      teach: '',
+      idea: 'The Queen begins beside home while the King must leave for the key. Moving ' +
+            'either crown changes which of Stone and Iron can safely answer next.',
+      capacity: 3,
+      map: [
+        '#######',
+        '#.....#',
+        '#######',
+        '#...L.E',
+        '#######',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 3, row: 3 },
+        { id: 'q', type: 'queen', col: 5, row: 3 },
+        { id: 'y', type: 'key', col: 1, row: 3 },
+        { id: 's', type: 'stone', col: 1, row: 1 },
+        { id: 'i', type: 'iron', col: 4, row: 5 }
+      ],
+      par: { three: 13, two: 18 }
+    },
+
+    {
+      id: 73,
+      chapter: 7,
+      title: 'Borrowed Weight',
+      teach: '',
+      idea: 'The Queen and Iron open the door. A barrel crosses first, comes back to ' +
+            'replace the Queen on her plate, and only then can both crowns leave.',
+      capacity: 10,
+      map: [
+        '###E###',
+        '###L###',
+        '#.....#',
+        '###d###',
+        '#1...4#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 2, row: 5 },
+        { id: 'q', type: 'queen', col: 1, row: 5 },
+        { id: 'y', type: 'key', col: 5, row: 2 },
+        { id: 'i', type: 'iron', col: 5, row: 5 },
+        { id: 'b', type: 'barrel', col: 3, row: 2 }
+      ],
+      par: { three: 21, two: 29 }
+    },
+
+    {
+      id: 74,
+      chapter: 7,
+      title: 'Two on Thin Ground',
+      teach: '',
+      idea: 'Both crowns need the same fragile bridge. They must approach in line and ' +
+            'cross as one push before the rear crown lets the floor fall away.',
+      capacity: 20,
+      map: [
+        '###E###',
+        '###L###',
+        '#.....#',
+        '###x###',
+        '#.....#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'q', type: 'queen', col: 2, row: 5 },
+        { id: 'y', type: 'key', col: 5, row: 5 }
+      ],
+      par: { three: 12, two: 17 }
+    },
+
+    {
+      id: 75,
+      chapter: 7,
+      title: 'The Fourth Job',
+      teach: '',
+      idea: 'Queen and Iron raise the door. Stone comes down to replace her on the ' +
+            'plate, and Iron must later leave its own plate to balance the key return.',
+      capacity: 8,
+      map: [
+        '###E###',
+        '###L###',
+        '#.....#',
+        '###d###',
+        '#1...4#',
+        '#.....#',
+        '#######'
+      ],
+      pieces: [
+        { id: 'k', type: 'king', col: 1, row: 5 },
+        { id: 'q', type: 'queen', col: 2, row: 5 },
+        { id: 'y', type: 'key', col: 5, row: 2 },
+        { id: 'i', type: 'iron', col: 5, row: 5 },
+        { id: 's', type: 'stone', col: 4, row: 2 }
+      ],
+      par: { three: 22, two: 31 }
     }
   ];
 
 
   var CHAPTERS = [
-    { n: 1, title: 'The Quiet Kingdom', note: 'Weight, distance, and a board that answers' },
-    { n: 2, title: 'Loose Ground',      note: 'Floors that slide, crumble, and only go one way' },
-    { n: 3, title: 'The Locked Halls',  note: 'Gates that want paying for' },
-    { n: 4, title: 'The Brass Keys',    note: 'Blocks that only a royal hand can open' },
-    { n: 5, title: "The Queen's Road",  note: 'Two crowns, one frame, one gate' }
+    { n: 1, title: 'The Quiet Kingdom',  note: 'Weight, distance, and a board that answers' },
+    { n: 2, title: 'Loose Ground',       note: 'Floors that slide, crumble, and only go one way' },
+    { n: 3, title: 'The Locked Halls',   note: 'Gates that want paying for' },
+    { n: 4, title: 'The Brass Keys',     note: 'Blocks that only a royal hand can open' },
+    { n: 5, title: "The Queen's Road",   note: 'Two crowns, one frame, one gate' },
+    { n: 6, title: 'The Turning Rooms',  note: 'Every useful thing has another job waiting' },
+    { n: 7, title: 'The Proving Ground', note: 'Dependencies, reversals, and commitments under test' }
   ];
 
   root.CK = root.CK || {};
